@@ -107,5 +107,16 @@ export function useWebSocket() {
     };
   }, []);
 
+  // Re-send init if callDetails.id becomes available after socket is open
+  useEffect(() => {
+    if (socket && connected && callDetails?.id) {
+      console.log('Sending init message with callId after availability', callDetails.id);
+      socket.send(JSON.stringify({
+        type: 'init',
+        callId: callDetails.id
+      }));
+    }
+  }, [callDetails?.id, socket, connected]);
+
   return { connected, sendMessage, reconnect };
 }
