@@ -1,0 +1,571 @@
+import React, { useEffect, useState } from 'react';
+import { useAssistant } from '@/context/AssistantContext';
+import { ServiceRequest } from '@/types';
+
+interface Interface3Props {
+  isActive: boolean;
+}
+
+const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
+  const { 
+    orderSummary, 
+    setOrderSummary, 
+    setCurrentInterface,
+    setOrder,
+    callSummary,
+    serviceRequests,
+    callDuration,
+    callDetails,
+    emailSentForCurrentSession,
+    setEmailSentForCurrentSession
+  } = useAssistant();
+  
+  // Local state for grouping service requests by type
+  const [groupedRequests, setGroupedRequests] = useState<Record<string, ServiceRequest[]>>({});
+  
+  // Handle input changes
+  const handleInputChange = (field: string, value: string) => {
+    if (!orderSummary) return;
+    
+    setOrderSummary({
+      ...orderSummary,
+      [field]: value
+    });
+  };
+  
+  // Handle item removal
+  const handleRemoveItem = (itemId: string) => {
+    if (!orderSummary) return;
+    
+    const updatedItems = orderSummary.items.filter(item => item.id !== itemId);
+    const newTotalAmount = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+    setOrderSummary({
+      ...orderSummary,
+      items: updatedItems,
+      totalAmount: newTotalAmount
+    });
+  };
+  
+  // Group service requests by type for better organization
+  useEffect(() => {
+    if (serviceRequests && serviceRequests.length > 0) {
+      // Group the requests by service type
+      const grouped = serviceRequests.reduce((acc, request) => {
+        const type = request.serviceType;
+        if (!acc[type]) acc[type] = [];
+        acc[type].push(request);
+        return acc;
+      }, {} as Record<string, ServiceRequest[]>);
+      
+      setGroupedRequests(grouped);
+      
+      // Generate OrderItems based on service requests
+      if (orderSummary && (!orderSummary.items || orderSummary.items.length === 0)) {
+        // Create items from service requests
+        const newItems = serviceRequests.map((request, index) => {
+          // Determine appropriate quantity based on details
+          let quantity = 1;
+          
+          // Look for specific quantities in the request text or details
+          const details = request.details || {};
+          const quantityMatch = request.requestText.match(/(\d+)\s+(towels|bottles|pieces|cups|glasses|plates|servings|items)/i);
+          if (quantityMatch) {
+            quantity = parseInt(quantityMatch[1]);
+          } else if (typeof details.people === 'number') {
+            // For tours, transportation, use people count as quantity reference
+            quantity = details.people;
+          }
+          
+          // Calculate appropriate price based on service type
+          let price = 10; // Default price
+          if (request.serviceType === 'room-service') price = 15;
+          else if (request.serviceType === 'housekeeping') price = 8;
+          else if (request.serviceType === 'transportation') price = 25;
+          else if (request.serviceType === 'tours-activities') price = 35;
+          else if (request.serviceType === 'spa') price = 30;
+          
+          // Summarize details into a comprehensive description
+          // Start with a clean request text
+          let description = "";
+          
+          // Create a more structured and readable format with all available details
+          // Important information first
+          if (details.roomNumber && details.roomNumber !== "unknown" && details.roomNumber !== "Not specified") 
+            description += `Room Number: ${details.roomNumber}\n`;
+            
+          if (details.date && details.date !== "Not specified") 
+            description += `Date: ${details.date}\n`;
+            
+          if (details.time && details.time !== "Not specified") 
+            description += `Time: ${details.time}\n`;
+          
+          // Add secondary but still critical information
+          if (details.people) {
+            // people is a number in the type definition, so just use it directly
+            description += `Number of People: ${details.people}\n`;
+          }
+          
+          if (details.location && details.location !== "Not specified") 
+            description += `Location: ${details.location}\n`;
+            
+          if (details.amount && details.amount !== "Not specified") 
+            description += `Amount: ${details.amount}\n`;
+          
+          // Add the full request details at the end
+          description += `\nRequest: ${request.requestText}`;
+          
+          // Add any additional details last, but only if they're meaningful
+          if (details.otherDetails && 
+              details.otherDetails !== "Not specified" && 
+              details.otherDetails !== "None" &&
+              !details.otherDetails.includes("Not specified"))
+            description += `\n\nAdditional Details: ${details.otherDetails}`;
+          
+          return {
+            id: (index + 1).toString(),
+            name: request.requestText.length > 60 
+              ? request.requestText.substring(0, 57) + '...' 
+              : request.requestText,
+            description: description,
+            quantity: quantity,
+            price: price,
+            serviceType: request.serviceType
+          };
+        });
+        
+        // Create a comma-separated list of unique service types
+        const uniqueServiceTypes = Array.from(new Set(serviceRequests.map(r => r.serviceType)));
+        const serviceTypes = uniqueServiceTypes.join(',');
+        
+        // Determine delivery time based on most urgent request
+        let deliveryTime = orderSummary.deliveryTime;
+        if (serviceRequests.some(r => 
+            r.details && 
+            r.details.time && 
+            typeof r.details.time === 'string' && 
+            r.details.time.toLowerCase().includes('immediate'))) {
+          deliveryTime = 'asap';
+        }
+        
+        // Get room number if available
+        const roomNumberDetail = serviceRequests.find(r => 
+          r.details && 
+          r.details.roomNumber && 
+          r.details.roomNumber !== "unknown" && 
+          r.details.roomNumber !== "Not specified"
+        )?.details?.roomNumber;
+        
+        // Update order summary with new items and enhanced info
+        setOrderSummary({
+          ...orderSummary,
+          items: newItems,
+          totalAmount: newItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+          orderType: serviceTypes, // Update service types from detected categories
+          roomNumber: roomNumberDetail || orderSummary.roomNumber,
+          deliveryTime: deliveryTime // Update delivery time based on detected urgency
+        });
+      }
+    }
+  }, [serviceRequests, isActive, orderSummary, setOrderSummary]);
+  
+  // Helper function to get readable service name from service type
+  const getServiceName = (serviceType: string): string => {
+    const typeMap: Record<string, string> = {
+      'room-service': 'Room Service',
+      'housekeeping': 'Housekeeping',
+      'wake-up': 'Wake-up Call',
+      'amenities': 'Additional Amenities',
+      'restaurant': 'Restaurant Reservation',
+      'spa': 'Spa Appointment',
+      'transportation': 'Transportation',
+      'attractions': 'Local Attractions',
+      'tours-activities': 'Tours & Activities',
+      'technical-support': 'Technical Support',
+      'concierge': 'Concierge Services',
+      'wellness-fitness': 'Wellness & Fitness',
+      'security': 'Security Assistance',
+      'special-occasions': 'Special Occasion',
+      'other': 'Other Service'
+    };
+    
+    return typeMap[serviceType] || serviceType.split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+  
+  // Legacy function to analyze call summary and prepare request items
+  useEffect(() => {
+    if (isActive && callSummary && orderSummary && (!serviceRequests || serviceRequests.length === 0)) {
+      // Extract requests from summary content
+      const content = callSummary.content;
+      
+      // Try to find "List of Requests:" section and extract individual requests
+      const requestsMatch = content.match(/List of Requests:([\s\S]*?)(?:\n\nSpecial Instructions|\n\nThe conversation)/);
+      
+      if (requestsMatch) {
+        const requestsSection = requestsMatch[1];
+        const requestRegex = /Request (\d+): ([^\n]+)/g;
+        
+        let match;
+        const newItems = [];
+        let id = 1;
+        
+        // Extract all detected service requests
+        while ((match = requestRegex.exec(requestsSection)) !== null) {
+          const requestType = match[2].trim();
+          const requestIndex = match.index;
+          const endIndex = requestsSection.indexOf(`Request ${parseInt(match[1]) + 1}:`, requestIndex);
+          
+          // Extract the details section for this request
+          const detailsSection = endIndex > -1 
+            ? requestsSection.substring(requestIndex, endIndex)
+            : requestsSection.substring(requestIndex);
+          
+          // Parse specific details
+          const detailsRegex = /- ([^:]+): ([^\n]+)/g;
+          let detailsMatch;
+          const details: Record<string, string> = {};
+          
+          while ((detailsMatch = detailsRegex.exec(detailsSection)) !== null) {
+            const key = detailsMatch[1].trim();
+            const value = detailsMatch[2].trim();
+            details[key.toLowerCase()] = value;
+          }
+          
+          // Construct comprehensive description including all details
+          let description = '';
+          
+          if (details['service description']) {
+            description += `${details['service description']}`;
+          }
+          
+          if (details['details']) {
+            description += description ? `. ${details['details']}` : details['details'];
+          }
+          
+          if (details['items']) {
+            description += description ? `\nItems: ${details['items']}` : `Items: ${details['items']}`;
+          }
+          
+          if (details['service timing requested']) {
+            description += `\nTiming: ${details['service timing requested']}`;
+          }
+          
+          if (details['destinations']) {
+            description += `\nDestinations: ${details['destinations']}`;
+          }
+          
+          // If no details were extracted, provide a default description
+          if (!description) {
+            description = `Requested ${requestType} service`;
+          }
+          
+          newItems.push({
+            id: id.toString(),
+            name: requestType,
+            description: description,
+            quantity: 1,
+            price: 10 // Default price
+          });
+          
+          id++;
+        }
+        
+        // If we found at least one request and we don't already have items,
+        // update the orderSummary with the new items
+        if (newItems.length > 0 && (!orderSummary.items || orderSummary.items.length === 0)) {
+          // Create a comma-separated list of service types
+          const serviceTypes = newItems.map(item => {
+            // Convert service name to service type value
+            const serviceType = item.name.toLowerCase().replace(/\s+/g, '-');
+            return serviceType;
+          }).join(',');
+          
+          // Look for room number in the summary
+          const roomMatch = content.match(/Room Number:?\s*(\d+)/i);
+          const roomNumber = roomMatch ? roomMatch[1] : orderSummary.roomNumber;
+          
+          // Look for overall timing
+          const timingMatch = content.match(/Service Timing Requested:?\s*([^\n]+)/i);
+          const timing = timingMatch ? timingMatch[1] : orderSummary.deliveryTime;
+          
+          // Map the timing description to our delivery time options
+          let deliveryTime = orderSummary.deliveryTime;
+          if (timing) {
+            if (/soon|immediate|urgent|right now/i.test(timing)) {
+              deliveryTime = 'asap';
+            } else if (/30 minute|half hour/i.test(timing)) {
+              deliveryTime = '30min';
+            } else if (/hour|60 minute/i.test(timing)) {
+              deliveryTime = '1hour';
+            } else if (/schedule|later|specific/i.test(timing)) {
+              deliveryTime = 'specific';
+            }
+          }
+          
+          setOrderSummary({
+            ...orderSummary,
+            items: newItems,
+            orderType: serviceTypes,
+            roomNumber: roomNumber,
+            deliveryTime: deliveryTime,
+            totalAmount: newItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+          });
+        }
+      }
+    }
+  }, [isActive, callSummary, orderSummary, setOrderSummary]);
+
+  // Handle confirm order
+  const handleConfirmOrder = async () => {
+    if (!orderSummary) return;
+    
+    // Generate a random order reference
+    const orderReference = `#ORD-${Math.floor(10000 + Math.random() * 90000)}`;
+    
+    // Set order data
+    setOrder({
+      reference: orderReference,
+      estimatedTime: '15-20 minutes',
+      summary: orderSummary
+    });
+    
+    // Check if email has already been sent for this session
+    if (emailSentForCurrentSession) {
+      console.log('Email already sent for this session. Skipping duplicate email sending.');
+      setCurrentInterface('interface4');
+      return;
+    }
+    
+    // Only send email from English interface if Vietnamese interface is not active
+    // This prevents duplicate emails when both components are rendered
+    const isVietnameseActive = document.querySelector('[data-interface="interface3vi"]')?.getAttribute('data-active') === 'true';
+    
+    if (!isVietnameseActive) {
+      // Send email with the order summary
+      try {
+        console.log('Sending email with call summary and service requests...');
+        
+        // Format call duration if available - ensure we have valid values even on mobile
+        const formattedDuration = callDuration ? 
+          `${Math.floor(callDuration / 60)}:${(callDuration % 60).toString().padStart(2, '0')}` : 
+          '0:00';
+          
+        console.log('Call duration for email:', formattedDuration);
+        
+        // Ensure we have a valid callId for both desktop and mobile
+        const generatedCallId = `call-${Date.now()}`;
+        const currentCallId = callDetails?.id || generatedCallId;
+        
+        console.log('Using callId for email:', currentCallId);
+        console.log('Call summary content:', callSummary?.content || 'No summary available');
+        
+        console.log('Preparing email request payload...');
+        const emailPayload = {
+          toEmail: 'tuans2@gmail.com', // Default email recipient
+          callDetails: {
+            callId: currentCallId,
+            roomNumber: orderSummary.roomNumber || 'unknown',
+            summary: callSummary?.content || 'No summary available',
+            timestamp: callSummary?.timestamp || new Date(),
+            duration: formattedDuration,
+            serviceRequests: orderSummary.items.map(item => item.name), 
+            orderReference: orderReference
+          }
+        };
+        console.log('Email payload prepared:', JSON.stringify(emailPayload));
+        
+        // Use a timeout to ensure the request is properly sent on mobile
+        // Phát hiện thiết bị di động ngay từ đầu
+        const isMobile = /iPhone|iPad|iPod|Android|Mobile|webOS|BlackBerry/i.test(navigator.userAgent);
+        console.log('Device type detected:', isMobile ? 'MOBILE' : 'DESKTOP');
+            
+        setTimeout(async () => {
+          try {
+            // Chọn endpoint phù hợp với loại thiết bị
+            const endpoint = isMobile ? '/api/mobile-call-summary-email' : '/api/send-call-summary-email';
+            console.log(`Using ${isMobile ? 'mobile' : 'standard'} endpoint for email: ${endpoint}`);
+            
+            // Thêm timestamp để tránh cache trên thiết bị di động
+            const requestUrl = isMobile ? `${endpoint}?_=${Date.now()}` : endpoint;
+            
+            console.log('Sending email request to server...');
+            const response = await fetch(requestUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache', 
+                'Expires': '0',
+                'X-Device-Type': isMobile ? 'mobile' : 'desktop'
+              },
+              body: JSON.stringify(emailPayload),
+              cache: 'no-cache',
+              credentials: 'same-origin',
+            });
+            
+            if (!response.ok) {
+              throw new Error(`Server responded with status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            console.log('Email sent with order confirmation:', result);
+            
+            // Mark that email has been sent for this session to prevent duplicates
+            setEmailSentForCurrentSession(true);
+          } catch (innerError) {
+            console.error('Failed to send email in timeout:', innerError);
+          }
+        }, isMobile ? 50 : 500); // Giảm thời gian timeout cho thiết bị di động
+
+      } catch (error) {
+        console.error('Failed to send email:', error);
+      }
+    } else {
+      console.log('Vietnamese interface is active, skipping email send from English interface');
+    }
+    
+    // Navigate to confirmation screen
+    setCurrentInterface('interface4');
+  };
+  
+  if (!orderSummary) return null;
+  
+  return (
+    <div className={`absolute w-full h-full transition-opacity duration-500 ${
+      isActive ? 'opacity-100' : 'opacity-0 pointer-events-none'
+    } bg-neutral z-30`} id="interface3">
+      <div className="container mx-auto h-full flex flex-col p-5">
+        <div className="bg-white rounded-lg shadow-md p-5 mb-5 flex-grow overflow-auto">
+          <div className="mb-4 pb-3 border-b border-gray-200">
+            <p className="font-poppins font-bold text-lg text-primary">REVIEW & CONFIRM</p>
+          </div>
+          
+          {/* AI-generated Call Summary Container */}
+          <div id="summary-container" className="mb-4">
+            {callSummary ? (
+              <div className="p-4 bg-blue-50 rounded-lg shadow-sm mb-4 relative">
+                <div className="absolute top-2 right-2 bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                  </svg>
+                  <span>AI Generated</span>
+                </div>
+                <h3 className="font-medium text-lg mb-2 text-blue-800">Conversation Summary</h3>
+                <p className="text-gray-700 whitespace-pre-line">{callSummary.content}</p>
+                
+                <div className="mt-3 flex justify-end">
+                  <div className="text-xs text-gray-500">
+                    Generated at {new Date(callSummary.timestamp).toLocaleTimeString()}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 bg-gray-50 rounded-lg shadow-sm mb-4 border border-dashed border-gray-300">
+                <div className="animate-pulse flex space-x-2 items-center">
+                  <div className="h-4 w-4 bg-gray-300 rounded-full"></div>
+                  <div className="h-4 bg-gray-300 rounded w-1/4"></div>
+                </div>
+                <h3 className="font-medium text-lg my-2 text-gray-600">Generating Summary...</h3>
+                <div className="space-y-2">
+                  <div className="h-2 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-2 bg-gray-200 rounded w-full"></div>
+                  <div className="h-2 bg-gray-200 rounded w-5/6"></div>
+                </div>
+                <p className="text-gray-400 italic mt-3">Our AI is analyzing your conversation and preparing a summary...</p>
+              </div>
+            )}
+          </div>
+          
+          {/* Service Requests Container */}
+          <div id="summaryContainer" className="mb-6">
+            {/* Service requests processed - hidden but functional */}
+            
+            {/* Room Information Section */}
+            <div className="mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="col-span-1">
+                  <p className="text-sm text-gray-500 mb-1">Room Number</p>
+                  <input 
+                    type="text" 
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-primary"
+                    value={orderSummary.roomNumber}
+                    onChange={(e) => handleInputChange('roomNumber', e.target.value)}
+                  />
+                </div>
+                <div className="col-span-1">
+                  <p className="text-sm text-gray-500 mb-1">Service Timing Requested</p>
+                  <select 
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-primary"
+                    value={orderSummary.deliveryTime}
+                    onChange={(e) => handleInputChange('deliveryTime', e.target.value as any)}
+                  >
+                    <option value="asap">As soon as possible</option>
+                    <option value="30min">Within 30 minutes</option>
+                    <option value="1hour">Within 1 hour</option>
+                    <option value="specific">Schedule for later</option>
+                    <option value="info">Information only - no timing</option>
+                  </select>
+                </div>
+              </div>
+              
+
+            </div>
+            
+            {/* Request placeholder - hidden but data still processed */}
+            <div className="hidden">
+              {orderSummary.items.length > 0 && (
+                <div>
+                  {orderSummary.items.map((item, index) => (
+                    <div key={item.id}>
+                      {/* Hidden but functional item data */}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* Hidden special instructions - data is preserved but not displayed */}
+            <div className="hidden">
+              {orderSummary.specialInstructions}
+            </div>
+            
+            {/* Hidden total amount calculation - not displayed */}
+            <div className="hidden">
+              {orderSummary.totalAmount.toFixed(2)}
+            </div>
+          </div>
+          
+          {/* Action Buttons - Responsive design for mobile */}
+          <div className="flex flex-wrap justify-center gap-2 mt-6">
+            <button 
+              className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium flex items-center"
+              onClick={() => setCurrentInterface('interface2')}
+            >
+              <span className="material-icons text-sm align-middle mr-1">arrow_back</span>
+              Back
+            </button>
+            <button 
+              className="px-3 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium flex items-center"
+              onClick={() => setCurrentInterface('interface3vi')}
+            >
+              <span className="material-icons text-sm align-middle mr-1">translate</span>
+              Vietnamese
+            </button>
+            <button 
+              id="confirmOrderButton" 
+              className="px-3 py-2 bg-green-500 text-white rounded-lg text-sm font-medium flex items-center"
+              onClick={handleConfirmOrder}
+            >
+              <span className="material-icons text-sm align-middle mr-1">check_circle</span>
+              Confirm
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Interface3;
