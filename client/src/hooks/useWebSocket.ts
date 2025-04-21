@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAssistant } from '@/context/AssistantContext';
 
 export function useWebSocket() {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [connected, setConnected] = useState(false);
   const { callDetails, addTranscript } = useAssistant();
+  const retryRef = useRef(0);
 
   // Initialize WebSocket connection
   const initWebSocket = useCallback(() => {
@@ -14,12 +15,14 @@ export function useWebSocket() {
 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/ws`;
+    console.log('Attempting WebSocket connection to', wsUrl);
     
     const newSocket = new WebSocket(wsUrl);
     
     newSocket.onopen = () => {
       console.log('WebSocket connection established');
       setConnected(true);
+      retryRef.current = 0; // reset retry count
       
       // Send initial message with call ID if available
       if (callDetails) {
@@ -37,6 +40,7 @@ export function useWebSocket() {
         // Handle transcript messages
         if (data.type === 'transcript') {
           addTranscript({
+            callId: data.callId,
             role: data.role,
             content: data.content
           });
@@ -46,14 +50,27 @@ export function useWebSocket() {
       }
     };
     
-    newSocket.onclose = () => {
-      console.log('WebSocket connection closed');
+    newSocket.onclose = (event) => {
+      console.log('WebSocket connection closed', event);
       setConnected(false);
+      
+      // Reconnect with exponential backoff
+      if (retryRef.current < 5) {
+        const delay = Math.pow(2, retryRef.current) * 1000;
+        console.log(`Reconnecting WebSocket in ${delay}ms (attempt ${retryRef.current + 1})`);
+        setTimeout(initWebSocket, delay);
+        retryRef.current++;
+      } else {
+        console.warn('Max WebSocket reconnection attempts reached');
+      }
     };
     
-    newSocket.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      setConnected(false);
+    newSocket.onerror = (event) => {
+      console.error('WebSocket encountered error', event);
+      // Close socket to trigger reconnect logic
+      if (newSocket.readyState !== WebSocket.CLOSED) {
+        newSocket.close();
+      }
     };
     
     setSocket(newSocket);
