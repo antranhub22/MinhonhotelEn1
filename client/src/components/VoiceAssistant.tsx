@@ -31,12 +31,6 @@ const VoiceAssistant: React.FC = () => {
                 Call History
               </a>
             </Link>
-            <Link href="/email-test">
-              <a className="px-3 py-1 rounded bg-green-600 text-white text-sm flex items-center">
-                <span className="material-icons text-sm align-middle mr-1">email</span>
-                Test Email
-              </a>
-            </Link>
             <button className="px-3 py-1 rounded bg-amber-400 text-neutral-dark text-sm">
               <span className="material-icons text-sm align-middle mr-1">help_outline</span>
               Help
@@ -45,15 +39,6 @@ const VoiceAssistant: React.FC = () => {
         </div>
       </header>
 
-      {/* Mobile menu */}
-      <div className="md:hidden fixed bottom-4 right-4 z-50">
-        <Link href="/email-test">
-          <a className="flex items-center justify-center w-14 h-14 rounded-full bg-green-600 text-white shadow-lg">
-            <span className="material-icons">email</span>
-          </a>
-        </Link>
-      </div>
-      
       {/* Interface Layers Container */}
       <div className="relative w-full h-full" id="interfaceContainer">
         <Interface1 
