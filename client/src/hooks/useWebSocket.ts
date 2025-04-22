@@ -14,10 +14,9 @@ export function useWebSocket() {
       socket.close();
     }
 
+    // Always connect WebSocket to the current application origin
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    // Use VITE_API_HOST from environment or fallback to current host
-    const host = import.meta.env.VITE_API_HOST || window.location.host;
-    const wsUrl = `${protocol}//${host}/ws`;
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
     console.log('Attempting WebSocket connection to', wsUrl);
     
     const newSocket = new WebSocket(wsUrl);
