@@ -171,35 +171,37 @@ export const sendCallSummary = async (
       ? callDetails.serviceRequests.map(req => `<li>${req}</li>`).join('') 
       : '<li>Không có yêu cầu cụ thể</li>';
 
-    // Chuẩn bị nội dung email HTML
+    // Chuẩn bị nội dung email HTML (theo layout Review & Confirm)
     const emailHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
-        <h2 style="color: #333; text-align: center;">Mi Nhon Hotel Mui Ne</h2>
-        <p style="text-align: center;">Tóm tắt cuộc gọi với trợ lý ảo</p>
-        <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-        
-        ${callDetails.orderReference ? `<p><strong>Order Reference:</strong> ${callDetails.orderReference}</p>` : ''}
-        <p><strong>Phòng:</strong> ${callDetails.roomNumber}</p>
-        <p><strong>Thời gian:</strong> ${callDetails.timestamp.toLocaleString()}</p>
-        <p><strong>Thời lượng cuộc gọi:</strong> ${callDetails.duration}</p>
-        
-        <p><strong>Tóm tắt nội dung:</strong></p>
-        <p style="padding: 10px; background-color: #f9f9f9; border-radius: 5px;">${callDetails.summary}</p>
-        
-        <p><strong>Các dịch vụ được yêu cầu:</strong></p>
-        <ul style="padding-left: 20px;">
-          ${serviceRequestsHtml}
-        </ul>
-        
-        <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-        <p style="text-align: center; color: #777; font-size: 14px;">
-          Cảm ơn quý khách đã lựa chọn Mi Nhon Hotel Mui Ne.<br>
-          Nếu cần hỗ trợ, vui lòng liên hệ lễ tân hoặc gọi số nội bộ 0.
-        </p>
+      <div style="font-family: Arial, sans-serif; max-width:600px; margin:0 auto; padding:20px;">
+        <div style="background-color:#ebf8ff; border-radius:8px; padding:20px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+          <h2 style="margin:0; color:#1e40af; text-align:center;">Mi Nhon Hotel Mui Ne</h2>
+          <p style="margin:8px 0 16px; text-align:center; font-size:16px; color:#1e3a8a;">Tóm tắt cuộc gọi với trợ lý ảo</p>
+          ${callDetails.orderReference ? `<p><strong>Mã tham chiếu:</strong> ${callDetails.orderReference}</p>` : ''}
+          <p><strong>Phòng:</strong> ${callDetails.roomNumber}</p>
+          <p><strong>Thời gian:</strong> ${callDetails.timestamp.toLocaleString()}</p>
+          <p><strong>Thời lượng cuộc gọi:</strong> ${callDetails.duration}</p>
+
+          <div style="background-color:#e0f2fe; border-radius:6px; padding:15px; margin:20px 0; line-height:1.5;">
+            <h3 style="margin-top:0; color:#1e3a8a; font-size:18px;">Conversation Summary</h3>
+            <p style="white-space:pre-wrap; color:#1e293b;">${callDetails.summary}</p>
+          </div>
+
+          <div style="margin-bottom:20px;">
+            <h3 style="margin:0 0 8px; color:#1e3a8a;">Các dịch vụ được yêu cầu</h3>
+            <ul style="margin:0; padding-left:20px; color:#1e293b;">
+              ${serviceRequestsHtml}
+            </ul>
+          </div>
+          <p style="text-align:center; color:#475569; font-size:14px;">
+            Cảm ơn quý khách đã lựa chọn Mi Nhon Hotel Mui Ne.<br>
+            Nếu cần hỗ trợ, vui lòng liên hệ lễ tân hoặc gọi số nội bộ 0.
+          </p>
+        </div>
       </div>
     `;
 
-    console.log('Gửi email tóm tắt với Gmail');
+    console.log('Gửi email tóm tắt cuộc gọi qua Gmail');
     
     // Tạo bản ghi log
     const emailLog = {
