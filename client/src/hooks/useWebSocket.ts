@@ -9,6 +9,7 @@ export function useWebSocket() {
 
   // Initialize WebSocket connection
   const initWebSocket = useCallback(() => {
+    console.log('useWebSocket env VITE_API_HOST:', import.meta.env.VITE_API_HOST);
     if (socket !== null) {
       socket.close();
     }
