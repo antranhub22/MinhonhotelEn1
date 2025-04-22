@@ -360,14 +360,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isAiGenerated: isAiGenerated,
         serviceRequests: serviceRequests
       });
-    } catch (error) {
-      console.error('Error storing call summary:', error);
-      
+    } catch (error: any) {
+      console.error('Error storing call summary:', error, error.stack);
+      // Return detailed error info for debugging
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: 'Invalid summary data', details: error.errors });
-      } else {
-        res.status(500).json({ error: 'Failed to save call summary' });
+        return res.status(400).json({ error: 'Invalid summary data', details: error.errors });
       }
+      return res.status(500).json({
+        error: 'Failed to save call summary',
+        message: error.message,
+        stack: error.stack
+      });
     }
   });
   
