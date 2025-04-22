@@ -187,12 +187,6 @@ export const sendCallSummary = async (
             <p style="white-space:pre-wrap; color:#1e293b;">${callDetails.summary}</p>
           </div>
 
-          <div style="margin-bottom:20px;">
-            <h3 style="margin:0 0 8px; color:#1e3a8a;">Các dịch vụ được yêu cầu</h3>
-            <ul style="margin:0; padding-left:20px; color:#1e293b;">
-              ${serviceRequestsHtml}
-            </ul>
-          </div>
           <p style="text-align:center; color:#475569; font-size:14px;">
             Cảm ơn quý khách đã lựa chọn Mi Nhon Hotel Mui Ne.<br>
             Nếu cần hỗ trợ, vui lòng liên hệ lễ tân hoặc gọi số nội bộ 0.
@@ -230,7 +224,7 @@ export const sendCallSummary = async (
         to: toEmail,
         subject: `Mi Nhon Hotel - Tóm tắt yêu cầu từ phòng ${callDetails.roomNumber}`,
         html: emailHtml,
-        text: `Tóm tắt cuộc gọi từ phòng ${callDetails.roomNumber}:\n\n${callDetails.summary}\n\nCác dịch vụ được yêu cầu:\n${callDetails.serviceRequests.join('\n')}`
+        text: `Tóm tắt cuộc gọi từ phòng ${callDetails.roomNumber}:\n\n${callDetails.summary}`
       };
 
       const result = await transporter.sendMail(mailOptions);
@@ -256,10 +250,6 @@ export const sendCallSummary = async (
       console.log('Order Reference:', callDetails.orderReference || 'Không có');
       console.log('Tóm tắt nội dung:');
       console.log(callDetails.summary);
-      console.log('Các dịch vụ được yêu cầu:');
-      callDetails.serviceRequests.forEach((req, index) => {
-        console.log(`  ${index + 1}. ${req}`);
-      });
       console.log('===================================================');
       
       throw emailError;
