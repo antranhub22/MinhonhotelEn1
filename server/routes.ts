@@ -884,5 +884,17 @@ Mi Nhon Hotel Mui Ne`
     }
   });
 
+  // Simple endpoint to test database connectivity
+  app.get('/api/db-test', async (req, res) => {
+    try {
+      // Try a simple read operation
+      const recent = await storage.getRecentCallSummaries(1);
+      return res.json({ success: true, count: recent.length });
+    } catch (dbError: any) {
+      console.error('DB test error:', dbError);
+      return res.status(500).json({ success: false, error: dbError.message });
+    }
+  });
+
   return httpServer;
 }
