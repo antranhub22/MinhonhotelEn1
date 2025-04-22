@@ -31,9 +31,17 @@ const CallHistory: React.FC = () => {
     });
   };
   
-  // Format call duration for display
+  // Format call duration for display (accepts "mm:ss" or numeric seconds)
   const formatDuration = (duration: string | undefined) => {
     if (!duration) return '00:00';
+    // If duration is pure seconds number, format to mm:ss
+    const seconds = parseInt(duration, 10);
+    if (!isNaN(seconds) && /^\d+$/.test(duration)) {
+      const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+      const secs = (seconds % 60).toString().padStart(2, '0');
+      return `${mins}:${secs}`;
+    }
+    // If already mm:ss or other format, return as-is
     return duration;
   };
   
