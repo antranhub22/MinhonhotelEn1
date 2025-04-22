@@ -27,6 +27,8 @@ interface AssistantContextType {
   vietnameseSummary: string | null;
   setVietnameseSummary: (summary: string) => void;
   translateToVietnamese: (text: string) => Promise<string>;
+  emailSentForCurrentSession: boolean;
+  setEmailSentForCurrentSession: (sent: boolean) => void;
 }
 
 const initialOrderSummary: OrderSummary = {
