@@ -22,6 +22,8 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
   
   // Local state for grouping service requests by type
   const [groupedRequests, setGroupedRequests] = useState<Record<string, ServiceRequest[]>>({});
+  // State for user-provided additional notes
+  const [note, setNote] = useState('');
   
   // Handle input changes
   const handleInputChange = (field: string, value: string) => {
@@ -370,8 +372,9 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
             summary: callSummary?.content || 'No summary available',
             timestamp: callSummary?.timestamp || new Date(),
             duration: formattedDuration,
-            serviceRequests: orderSummary.items.map(item => item.name), 
-            orderReference: orderReference
+            serviceRequests: orderSummary.items.map(item => item.name),
+            orderReference: orderReference,
+            note: note // User-provided additional notes
           }
         };
         console.log('Email payload prepared:', JSON.stringify(emailPayload));
@@ -478,6 +481,18 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
             )}
           </div>
           
+          {/* Additional Notes Container */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Enter any corrections or additional information"
+              className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              rows={3}
+            />
+          </div>
+          
           {/* Service Requests Container */}
           <div id="summaryContainer" className="mb-6">
             {/* Service requests processed - hidden but functional */}
@@ -496,17 +511,13 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
                 </div>
                 <div className="col-span-1">
                   <p className="text-sm text-gray-500 mb-1">Service Timing Requested</p>
-                  <select 
+                  <input
+                    type="text"
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-primary"
                     value={orderSummary.deliveryTime}
-                    onChange={(e) => handleInputChange('deliveryTime', e.target.value as any)}
-                  >
-                    <option value="asap">As soon as possible</option>
-                    <option value="30min">Within 30 minutes</option>
-                    <option value="1hour">Within 1 hour</option>
-                    <option value="specific">Schedule for later</option>
-                    <option value="info">Information only - no timing</option>
-                  </select>
+                    onChange={(e) => handleInputChange('deliveryTime', e.target.value)}
+                    placeholder="Nhập thời gian yêu cầu hoặc mặc định từ cuộc gọi"
+                  />
                 </div>
               </div>
               
