@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useAssistant } from '@/context/AssistantContext';
-import courtyardImage from '../assets/courtyard.jpeg';
 
 interface Interface2Props {
   isActive: boolean;
@@ -80,7 +79,7 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
         isActive ? 'opacity-100' : 'opacity-0 pointer-events-none'
       } z-20`} id="interface2"
       style={{
-        backgroundImage: `linear-gradient(rgba(26, 35, 126, 0.8), rgba(63, 81, 181, 0.8)), url(${courtyardImage})`,
+        backgroundImage: "linear-gradient(rgba(26, 35, 126, 0.8), rgba(63, 81, 181, 0.8)), url('/assets/courtyard.jpeg')",
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       }}
