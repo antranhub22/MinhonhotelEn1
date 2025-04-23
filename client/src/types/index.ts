@@ -56,6 +56,13 @@ export interface Order {
   summary: OrderSummary;
 }
 
+// A record of a completed call order for status display
+export interface RecentCallStatus {
+  reference: string;
+  receivedAt: Date;
+  estimatedTime: string;
+}
+
 export interface CallDetails {
   id: string;
   roomNumber: string;
@@ -92,4 +99,7 @@ export interface AssistantContextType {
   setEmailSentForCurrentSession: (sent: boolean) => void;
   requestReceivedAt: Date | null;
   setRequestReceivedAt: (date: Date) => void;
+  // History of call statuses for interface1
+  recentCalls: RecentCallStatus[];
+  addRecentCall: (call: RecentCallStatus) => void;
 }

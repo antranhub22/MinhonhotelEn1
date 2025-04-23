@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Transcript, OrderSummary, CallDetails, Order, InterfaceLayer, CallSummary, ServiceRequest } from '@/types';
+import { Transcript, OrderSummary, CallDetails, Order, InterfaceLayer, CallSummary, ServiceRequest, RecentCallStatus } from '@/types';
 import { initVapi, vapiInstance, FORCE_BASIC_SUMMARY } from '@/lib/vapiClient';
 import { apiRequest } from '@/lib/queryClient';
 import { parseSummaryToOrderDetails } from '@/lib/summaryParser';
@@ -31,6 +31,8 @@ interface AssistantContextType {
   setEmailSentForCurrentSession: (sent: boolean) => void;
   requestReceivedAt: Date | null;
   setRequestReceivedAt: (date: Date | null) => void;
+  recentCalls: RecentCallStatus[];
+  addRecentCall: (call: RecentCallStatus) => void;
 }
 
 const initialOrderSummary: OrderSummary = {
@@ -77,6 +79,8 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
   const [vietnameseSummary, setVietnameseSummary] = useState<string | null>(null);
   const [emailSentForCurrentSession, setEmailSentForCurrentSession] = useState<boolean>(false);
   const [requestReceivedAt, setRequestReceivedAt] = useState<Date | null>(null);
+  // History of completed call statuses
+  const [recentCalls, setRecentCalls] = useState<RecentCallStatus[]>([]);
 
   // Add transcript to the list
   const addTranscript = React.useCallback((transcript: Omit<Transcript, 'id' | 'timestamp' | 'callId'>) => {
@@ -478,6 +482,10 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const addRecentCall = (call: RecentCallStatus) => {
+    setRecentCalls(prev => [call, ...prev]);
+  };
+
   const value: AssistantContextType = {
     currentInterface,
     setCurrentInterface,
@@ -505,6 +513,8 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     setEmailSentForCurrentSession,
     requestReceivedAt,
     setRequestReceivedAt,
+    recentCalls,
+    addRecentCall,
   };
 
   return (
