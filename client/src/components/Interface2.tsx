@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useAssistant } from '@/context/AssistantContext';
-import hotelImage from '../assets/hotel-exterior.jpeg';
 import courtyardImage from '../assets/courtyard.jpeg';
 
 interface Interface2Props {
@@ -81,14 +80,14 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
         isActive ? 'opacity-100' : 'opacity-0 pointer-events-none'
       } z-20`} id="interface2"
       style={{
-        backgroundImage: `linear-gradient(rgba(26, 35, 126, 0.8), rgba(63, 81, 181, 0.8)), url(${hotelImage})`,
+        backgroundImage: `linear-gradient(rgba(26, 35, 126, 0.8), rgba(63, 81, 181, 0.8)), url(${courtyardImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       }}
     >
       <div className="container mx-auto h-full flex flex-col p-5">
-        <div className="bg-pink-50/70 backdrop-blur-sm border border-pink-200 rounded-lg shadow-md p-6 mb-5 flex-grow overflow-hidden flex flex-col">
-          <div className="mb-4 pb-3 border-b-2 border-pink-200 bg-pink-100/80 rounded-t-lg px-4 flex justify-between items-center">
+        <div className="bg-white rounded-lg shadow-md p-5 mb-5 flex-grow overflow-hidden flex flex-col">
+          <div className="mb-4 pb-3 border-b border-gray-200 flex justify-between items-center">
             <h2 className="font-poppins font-semibold text-xl text-primary">RealTime Conversation</h2>
             <div className="flex items-center space-x-3">
               <button
@@ -105,15 +104,10 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
           </div>
           
           {/* Realtime Conversation Container */}
-          <div
-            id="realTimeConversation"
+          <div 
+            id="realTimeConversation" 
             ref={conversationRef}
-            className="flex-grow overflow-y-auto mb-4 p-4 rounded-lg backdrop-blur-sm relative"
-            style={{
-              backgroundImage: `url(${courtyardImage})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center'
-            }}
+            className="flex-grow overflow-y-auto mb-4 p-2"
           >
             {transcripts.map((transcript) => (
               <div className="mb-4 last:mb-0" key={transcript.id}>
