@@ -43,7 +43,6 @@ const Interface1: React.FC<Interface1Props> = ({ isActive }) => {
         </div>
         {/* Services Section */}
         <div className="text-center w-full max-w-5xl">
-          <h3 className="font-poppins font-semibold text-xl mb-4">Available Services:</h3>
           <div className="flex flex-row flex-wrap justify-center gap-3 text-left mx-auto">
             {/* Room & Stay */}
             <div className="bg-white/10 p-3 rounded-lg backdrop-blur-sm w-64">
