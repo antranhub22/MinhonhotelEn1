@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useAssistant } from '@/context/AssistantContext';
 import hotelImage from '../assets/hotel-exterior.jpeg';
+import courtyardImage from '../assets/courtyard.jpeg';
 
 interface Interface2Props {
   isActive: boolean;
@@ -104,10 +105,15 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
           </div>
           
           {/* Realtime Conversation Container */}
-          <div 
-            id="realTimeConversation" 
+          <div
+            id="realTimeConversation"
             ref={conversationRef}
-            className="flex-grow overflow-y-auto mb-4 p-4 bg-white/60 rounded-lg backdrop-blur-sm"
+            className="flex-grow overflow-y-auto mb-4 p-4 rounded-lg backdrop-blur-sm relative"
+            style={{
+              backgroundImage: `url(${courtyardImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
           >
             {transcripts.map((transcript) => (
               <div className="mb-4 last:mb-0" key={transcript.id}>
