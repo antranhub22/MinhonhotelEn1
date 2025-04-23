@@ -591,6 +591,13 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
               <span className="material-icons text-sm align-middle mr-1">arrow_back</span>
               Back
             </button>
+            <button
+              className="px-3 py-2 bg-red-500 text-white rounded-lg text-sm font-medium flex items-center"
+              onClick={() => setCurrentInterface('interface1')}
+            >
+              <span className="material-icons text-sm align-middle mr-1">cancel</span>
+              Cancel
+            </button>
             <button 
               className="px-3 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium flex items-center"
               onClick={() => setCurrentInterface('interface3vi')}

@@ -12,7 +12,8 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
     callDuration,
     endCall: contextEndCall,
     isMuted,
-    toggleMute
+    toggleMute,
+    setCurrentInterface
   } = useAssistant();
   
   // Wrapper for endCall to include local duration if needed
@@ -80,7 +81,13 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
         <div className="bg-white rounded-lg shadow-md p-5 mb-5 flex-grow overflow-hidden flex flex-col">
           <div className="mb-4 pb-3 border-b border-gray-200 flex justify-between items-center">
             <h2 className="font-poppins font-semibold text-xl text-primary">RealTime Conversation</h2>
-            <div className="flex items-center">
+            <div className="flex items-center space-x-3">
+              <button
+                className="text-red-500 hover:text-red-600 text-sm"
+                onClick={() => setCurrentInterface('interface1')}
+              >
+                Cancel
+              </button>
               <span id="callStatus" className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500 text-white">
                 <span className="dot w-2 h-2 rounded-full bg-white mr-1.5 inline-block"></span>
                 Active Call
