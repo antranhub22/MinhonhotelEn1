@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAssistant } from '@/context/AssistantContext';
 import hotelImage from '../assets/hotel-exterior.jpeg';
 
@@ -9,6 +9,28 @@ interface Interface1Props {
 const Interface1: React.FC<Interface1Props> = ({ isActive }) => {
   const { startCall, requestReceivedAt, order } = useAssistant();
   
+  // Countdown state for 60-minute visibility
+  const [remainingSeconds, setRemainingSeconds] = useState(0);
+  // Update countdown based on requestReceivedAt
+  useEffect(() => {
+    if (!requestReceivedAt) return;
+    const deadline = new Date(requestReceivedAt.getTime() + 60 * 60 * 1000);
+    const updateRemaining = () => {
+      const now = new Date();
+      const diff = Math.max(Math.ceil((deadline.getTime() - now.getTime()) / 1000), 0);
+      setRemainingSeconds(diff);
+    };
+    updateRemaining();
+    const interval = setInterval(updateRemaining, 1000);
+    return () => clearInterval(interval);
+  }, [requestReceivedAt]);
+  // Format seconds to MM:SS
+  const formatCountdown = (sec: number) => {
+    const m = Math.floor(sec / 60).toString().padStart(2, '0');
+    const s = (sec % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
   return (
     <div 
       className={`absolute w-full h-full transition-opacity duration-500 ${
@@ -22,14 +44,12 @@ const Interface1: React.FC<Interface1Props> = ({ isActive }) => {
       }}
     >
       <div className="container mx-auto h-full flex flex-col items-center justify-start text-white p-5 pt-10 md:pt-16 overflow-y-auto">
-        {/* Small status box after returning home */}
-        {requestReceivedAt && order && (
+        {/* Status box: shows for 60 minutes with countdown */}
+        {order && remainingSeconds > 0 && (
           <div className="bg-white/80 backdrop-blur-sm p-3 rounded-md mb-4 text-gray-800 shadow-md max-w-sm w-full">
-            <p className="text-sm mb-1"><strong>Yêu cầu nhận lúc:</strong> {new Date(requestReceivedAt).toLocaleString('en-US', {
-              timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit',
-              hour: '2-digit', minute: '2-digit'
-            })}</p>
-            <p className="text-sm"><strong>Thời gian dự kiến:</strong> {order.estimatedTime}</p>
+            <p className="text-sm mb-1"><strong>Order Reference:</strong> {order.reference}</p>
+            <p className="text-sm mb-1"><strong>Time Remaining:</strong> {formatCountdown(remainingSeconds)}</p>
+            <p className="text-sm"><strong>Estimated Delivery:</strong> {order.estimatedTime}</p>
           </div>
         )}
         <h2 className="font-poppins font-bold text-3xl md:text-4xl text-amber-400 mb-2 text-center">Mi Nhon Hotel Mui Ne</h2>
