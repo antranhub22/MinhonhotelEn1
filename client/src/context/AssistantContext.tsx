@@ -269,12 +269,6 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
         
         // Reset call duration
         setCallDuration(0);
-
-        // Add initial assistant message that asks for room number
-        addTranscript({
-          role: 'assistant',
-          content: "Hello! Welcome to Mi Nhon Hotel. May I know your room number please, so I can better assist you today?"
-        });
       } catch (error) {
         console.error("Failed to start call:", error);
       }
