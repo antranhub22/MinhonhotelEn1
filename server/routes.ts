@@ -229,17 +229,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Store call summary from Vapi or generate with OpenAI
   app.post('/api/store-summary', async (req, res) => {
     try {
-      const { summary, timestamp, callId = 'default', transcripts } = req.body;
+      const { summary: summaryText, transcripts, timestamp, callId, callDuration: reqCallDuration, forceBasicSummary, orderReference } = req.body;
       
       // Determine if we need to generate a summary with OpenAI or use fallback
-      let finalSummary = summary;
+      let finalSummary = summaryText;
       let isAiGenerated = false;
       
       // If transcripts are provided and no summary is provided, try AI first then fallback
-      if (transcripts && (!summary || summary === '')) {
+      if (transcripts && (!summaryText || summaryText === '')) {
         // Check if we should try using OpenAI or go straight to fallback
         // Allow forcing basic summary from client or if no API key available
-        const forceBasicSummary = req.body.forceBasicSummary === true;
         const useOpenAi = !req.query.skipAi && !forceBasicSummary && process.env.OPENAI_API_KEY;
         
         if (useOpenAi) {
@@ -261,7 +260,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       } 
       // If no transcripts and no summary, try to fetch transcripts from database
-      else if (!summary || summary === '') {
+      else if (!summaryText || summaryText === '') {
         console.log('Fetching transcripts from database for callId:', callId);
         try {
           const storedTranscripts = await storage.getTranscriptsByCallId(callId);
@@ -307,11 +306,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const roomNumber = roomNumberMatch ? roomNumberMatch[1] : 'unknown';
       
       // Extract call duration or use default
-      let callDuration = '0:00';
-      if (req.body.callDuration) {
-        callDuration = typeof req.body.callDuration === 'number' 
-          ? `${Math.floor(req.body.callDuration / 60)}:${(req.body.callDuration % 60).toString().padStart(2, '0')}`
-          : req.body.callDuration;
+      let durationStr = '0:00';
+      if (reqCallDuration) {
+        durationStr = typeof reqCallDuration === 'number'
+          ? `${Math.floor(reqCallDuration / 60)}:${(reqCallDuration % 60).toString().padStart(2, '0')}`
+          : reqCallDuration;
       }
       
       const summaryData = insertCallSummarySchema.parse({
@@ -319,7 +318,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         content: finalSummary,
         timestamp: new Date(timestamp || Date.now()),
         roomNumber,
-        duration: callDuration
+        duration: durationStr,
+        orderReference
       });
       
       // Store in database
@@ -346,7 +346,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         console.log(`Phát hiện thông tin phòng: ${roomNumber}`);
         console.log(`Số lượng yêu cầu dịch vụ: ${serviceRequestStrings.length}`);
-        console.log(`Thời lượng cuộc gọi: ${callDuration}`);
+        console.log(`Thời lượng cuộc gọi: ${durationStr}`);
         console.log(`Email sẽ được gửi sau khi người dùng nhấn nút xác nhận`);
       } catch (extractError: any) {
         console.error('Error preparing service information:', extractError?.message || extractError);
@@ -397,24 +397,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get recent call summaries (within the last X hours)
-  // Get transcripts by call ID
-  app.get('/api/transcripts/:callId', async (req, res) => {
-    try {
-      const callId = req.params.callId;
-      
-      if (!callId) {
-        return res.status(400).json({ error: 'Call ID is required' });
-      }
-      
-      const transcripts = await storage.getTranscriptsByCallId(callId);
-      
-      res.json(transcripts);
-    } catch (error) {
-      console.error('Error retrieving transcripts:', error);
-      res.status(500).json({ error: 'Failed to retrieve conversation transcripts' });
-    }
-  });
-
   app.get('/api/summaries/recent/:hours', async (req, res) => {
     try {
       const hours = parseInt(req.params.hours) || 24; // Default to 24 hours if not specified
@@ -424,11 +406,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const summaries = await storage.getRecentCallSummaries(validHours);
       
+      // Pass through orderReference for each summary
+      const mapped = summaries.map(s => ({
+        id: s.id,
+        callId: s.callId,
+        roomNumber: s.roomNumber,
+        content: s.content,
+        timestamp: s.timestamp,
+        duration: s.duration
+      }));
       res.json({
         success: true,
         count: summaries.length,
         timeframe: `${validHours} hours`,
-        summaries: summaries
+        summaries: mapped
       });
     } catch (error) {
       console.error('Error retrieving recent call summaries:', error);
@@ -509,9 +500,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Send call summary email
   app.post('/api/send-call-summary-email', async (req, res) => {
     try {
-      const { toEmail, callDetails } = req.body;
-      
-      if (!toEmail || !callDetails || !callDetails.roomNumber || !callDetails.summary) {
+      const { callDetails } = req.body;
+      // Read recipients list from env (comma-separated), fallback to req.body.toEmail
+      const recipientsEnv = process.env.SUMMARY_EMAILS || '';
+      const toEmails = recipientsEnv
+        .split(',')
+        .map((e) => e.trim())
+        .filter(Boolean);
+      if (toEmails.length === 0 && req.body.toEmail) {
+        toEmails.push(req.body.toEmail);
+      }
+
+      if (!callDetails || !callDetails.roomNumber || !callDetails.summary) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
       
@@ -550,24 +550,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      const result = await sendCallSummary(toEmail, {
-        callId: callDetails.callId || 'unknown',
-        roomNumber: callDetails.roomNumber,
-        timestamp: new Date(callDetails.timestamp || Date.now()),
-        duration: callDetails.duration || '0:00',
-        summary: vietnameseSummary, // Sử dụng bản tóm tắt tiếng Việt
-        serviceRequests: vietnameseServiceRequests.length > 0 ? vietnameseServiceRequests : callDetails.serviceRequests || [],
-        orderReference: orderReference // Thêm mã tham chiếu
-      });
-      
-      if (result.success) {
-        res.json({
-          success: true,
-          messageId: result.messageId,
-          orderReference: orderReference // Trả về mã tham chiếu để hiển thị cho người dùng
+      // Send call summary to each recipient
+      const results = [];
+      for (const toEmail of toEmails) {
+        const result = await sendCallSummary(toEmail, {
+          callId: callDetails.callId || 'unknown',
+          roomNumber: callDetails.roomNumber,
+          timestamp: new Date(callDetails.timestamp || Date.now()),
+          duration: callDetails.duration || '0:00',
+          summary: vietnameseSummary, // Sử dụng bản tóm tắt tiếng Việt
+          serviceRequests: vietnameseServiceRequests.length > 0 ? vietnameseServiceRequests : callDetails.serviceRequests || [],
+          orderReference: orderReference // Thêm mã tham chiếu
         });
+        results.push(result);
+      }
+      
+      // Respond based on overall success
+      if (results.every((r) => r.success)) {
+        res.json({ success: true, recipients: toEmails, orderReference });
       } else {
-        throw new Error(result.error?.toString() || 'Unknown error');
+        throw new Error('Failed to send call summary to all recipients');
       }
     } catch (error) {
       console.error('Error sending call summary email:', error);
