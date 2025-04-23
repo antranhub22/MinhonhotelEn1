@@ -83,7 +83,11 @@ export const sendServiceConfirmation = async (
         ${serviceDetails.orderReference ? `<p><strong>Order Reference:</strong> ${serviceDetails.orderReference}</p>` : ''}
         <p><strong>Loại dịch vụ:</strong> ${serviceDetails.serviceType}</p>
         <p><strong>Phòng:</strong> ${serviceDetails.roomNumber}</p>
-        <p><strong>Thời gian yêu cầu:</strong> ${serviceDetails.timestamp.toLocaleString()}</p>
+        <p><strong>Thời gian yêu cầu:</strong> ${serviceDetails.timestamp.toLocaleString('en-US', {
+          timeZone: 'Asia/Ho_Chi_Minh',
+          year: 'numeric', month: 'numeric', day: 'numeric',
+          hour: '2-digit', minute: '2-digit', second: '2-digit'
+        })}</p>
         <p><strong>Chi tiết:</strong></p>
         <p style="padding: 10px; background-color: #f9f9f9; border-radius: 5px;">${serviceDetails.details}</p>
         
@@ -179,7 +183,11 @@ export const sendCallSummary = async (
           <p style="margin:8px 0 16px; text-align:center; font-size:16px; color:#1e3a8a;">Tóm tắt cuộc gọi với trợ lý ảo</p>
           ${callDetails.orderReference ? `<p><strong>Mã tham chiếu:</strong> ${callDetails.orderReference}</p>` : ''}
           <p><strong>Phòng:</strong> ${callDetails.roomNumber}</p>
-          <p><strong>Thời gian:</strong> ${callDetails.timestamp.toLocaleString()}</p>
+          <p><strong>Thời gian:</strong> ${callDetails.timestamp.toLocaleString('en-US', {
+            timeZone: 'Asia/Ho_Chi_Minh',
+            year: 'numeric', month: 'numeric', day: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+          })}</p>
           <p><strong>Thời lượng cuộc gọi:</strong> ${callDetails.duration}</p>
 
           <div style="background-color:#e0f2fe; border-radius:6px; padding:15px; margin:20px 0; line-height:1.5;">
@@ -244,7 +252,11 @@ export const sendCallSummary = async (
       
       // Lưu thông tin tóm tắt vào console để người dùng có thể xem
       console.log('============ THÔNG TIN TÓM TẮT CUỘC GỌI ============');
-      console.log('Thời gian:', callDetails.timestamp.toLocaleString());
+      console.log('Thời gian:', callDetails.timestamp.toLocaleString('en-US', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        year: 'numeric', month: 'numeric', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      }));
       console.log('Phòng:', callDetails.roomNumber);
       console.log('Thời lượng:', callDetails.duration);
       console.log('Order Reference:', callDetails.orderReference || 'Không có');
