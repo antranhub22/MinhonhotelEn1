@@ -85,7 +85,7 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
       }}
     >
       <div className="container mx-auto h-full flex flex-col p-5">
-        <div className="bg-white rounded-lg shadow-md p-5 mb-5 flex-grow overflow-hidden flex flex-col">
+        <div className="w-2/3 mx-auto bg-white rounded-lg shadow-md p-5 mb-5 overflow-hidden flex flex-col">
           <div className="mb-4 pb-3 border-b border-gray-200 flex justify-between items-center">
             <h2 className="font-poppins font-semibold text-xl text-primary">RealTime Conversation</h2>
             <div className="flex items-center space-x-3">
