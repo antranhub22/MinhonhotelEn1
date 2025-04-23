@@ -327,10 +327,27 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
     // Generate a random order reference
     const orderReference = `#ORD-${Math.floor(10000 + Math.random() * 90000)}`;
     
-    // Set order data
+    // Derive display text for estimated delivery time based on orderSummary
+    let estimatedDisplayTime: string;
+    switch (orderSummary.deliveryTime) {
+      case 'asap':
+        estimatedDisplayTime = 'As soon as possible';
+        break;
+      case '30min':
+        estimatedDisplayTime = '30 minutes';
+        break;
+      case '1hour':
+        estimatedDisplayTime = '1 hour';
+        break;
+      default:
+        // Use custom or specific time entered by user
+        estimatedDisplayTime = orderSummary.deliveryTime || '15-20 minutes';
+    }
+    
+    // Set order data with dynamic estimatedTime
     setOrder({
       reference: orderReference,
-      estimatedTime: '15-20 minutes',
+      estimatedTime: estimatedDisplayTime,
       summary: orderSummary
     });
     
