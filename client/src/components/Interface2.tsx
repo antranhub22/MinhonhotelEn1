@@ -86,8 +86,8 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
       }}
     >
       <div className="container mx-auto h-full flex flex-col p-5">
-        <div className="bg-white rounded-lg shadow-md p-5 mb-5 flex-grow overflow-hidden flex flex-col">
-          <div className="mb-4 pb-3 border-b border-gray-200 flex justify-between items-center">
+        <div className="bg-pink-50/70 backdrop-blur-sm border border-pink-200 rounded-lg shadow-md p-6 mb-5 flex-grow overflow-hidden flex flex-col">
+          <div className="mb-4 pb-3 border-b-2 border-pink-200 bg-pink-100/80 rounded-t-lg px-4 flex justify-between items-center">
             <h2 className="font-poppins font-semibold text-xl text-primary">RealTime Conversation</h2>
             <div className="flex items-center space-x-3">
               <button
@@ -107,7 +107,7 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
           <div 
             id="realTimeConversation" 
             ref={conversationRef}
-            className="flex-grow overflow-y-auto mb-4 p-2"
+            className="flex-grow overflow-y-auto mb-4 p-4 bg-white/60 rounded-lg backdrop-blur-sm"
           >
             {transcripts.map((transcript) => (
               <div className="mb-4 last:mb-0" key={transcript.id}>

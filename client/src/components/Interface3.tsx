@@ -476,22 +476,22 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
       }}
     >
       <div className="container mx-auto h-full flex flex-col p-5">
-        <div className="bg-white rounded-lg shadow-md p-5 mb-5 flex-grow overflow-auto">
-          <div className="mb-4 pb-3 border-b border-gray-200">
-            <p className="font-poppins font-bold text-lg text-primary">REVIEW & CONFIRM</p>
+        <div className="bg-pink-50/70 backdrop-blur-sm border border-pink-200 rounded-lg shadow-md p-6 mb-5 flex-grow overflow-auto">
+          <div className="mb-4 pb-3 border-b-2 border-pink-200 bg-pink-100/80 rounded-t-lg px-4">
+            <p className="font-poppins font-bold text-lg text-pink-800">REVIEW & CONFIRM</p>
           </div>
           
           {/* AI-generated Call Summary Container */}
           <div id="summary-container" className="mb-4">
             {callSummary ? (
-              <div className="p-4 bg-blue-50 rounded-lg shadow-sm mb-4 relative">
+              <div className="p-4 bg-pink-100/80 rounded-lg shadow-sm mb-4 relative">
                 <div className="absolute top-2 right-2 bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full flex items-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
                   </svg>
                   <span>AI Generated</span>
                 </div>
-                <h3 className="font-medium text-lg mb-2 text-blue-800">Conversation Summary</h3>
+                <h3 className="font-medium text-lg mb-2 text-pink-800">Conversation Summary</h3>
                 <p className="text-gray-700 whitespace-pre-line">{callSummary.content}</p>
                 
                 <div className="mt-3 flex justify-end">
