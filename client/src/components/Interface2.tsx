@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useAssistant } from '@/context/AssistantContext';
+import hotelImage from '../assets/hotel-exterior.jpeg';
 
 interface Interface2Props {
   isActive: boolean;
@@ -74,9 +75,16 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
   }, [transcripts, isActive]);
   
   return (
-    <div className={`absolute w-full h-full transition-opacity duration-500 ${
-      isActive ? 'opacity-100' : 'opacity-0 pointer-events-none'
-    } bg-neutral z-20`} id="interface2">
+    <div 
+      className={`absolute w-full h-full transition-opacity duration-500 ${
+        isActive ? 'opacity-100' : 'opacity-0 pointer-events-none'
+      } z-20`} id="interface2"
+      style={{
+        backgroundImage: `linear-gradient(rgba(26, 35, 126, 0.8), rgba(63, 81, 181, 0.8)), url(${hotelImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}
+    >
       <div className="container mx-auto h-full flex flex-col p-5">
         <div className="bg-white rounded-lg shadow-md p-5 mb-5 flex-grow overflow-hidden flex flex-col">
           <div className="mb-4 pb-3 border-b border-gray-200 flex justify-between items-center">
