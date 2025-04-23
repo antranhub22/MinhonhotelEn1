@@ -13,6 +13,7 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
     setCurrentInterface,
     setOrder,
     callSummary,
+    setCallSummary,
     serviceRequests,
     callDuration,
     callDetails,
@@ -433,6 +434,15 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
     setCurrentInterface('interface4');
   };
   
+  // Function to add note to the displayed summary
+  const handleAddNote = () => {
+    if (!note.trim() || !callSummary) return;
+    setCallSummary({
+      ...callSummary,
+      content: `${callSummary.content}\n\nAdditional Notes:\n${note}`
+    });
+  };
+  
   if (!orderSummary) return null;
   
   return (
@@ -491,6 +501,13 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
               className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               rows={3}
             />
+            <button
+              className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-lg text-sm font-medium"
+              onClick={handleAddNote}
+              disabled={!note.trim()}
+            >
+              Add Note
+            </button>
           </div>
           
           {/* Service Requests Container */}
