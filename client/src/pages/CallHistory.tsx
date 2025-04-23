@@ -160,7 +160,7 @@ const CallHistory: React.FC = () => {
                       <td className="p-3 text-sm text-gray-700">{formatDate(summary.timestamp)}</td>
                       <td className="p-3 text-sm text-gray-700">{summary.roomNumber || 'Unknown'}</td>
                       <td className="p-3 text-sm text-gray-700">{formatDuration(summary.duration)}</td>
-                      <td className="p-3 text-sm text-gray-700">{summary.callId}</td>
+                      <td className="p-3 text-sm text-gray-700">{`#ORD-${summary.callId}`}</td>
                       <td className="p-3 text-sm text-gray-700 max-w-md">
                         <div className="truncate">{summary.content}</div>
                       </td>
