@@ -56,13 +56,6 @@ export interface Order {
   summary: OrderSummary;
 }
 
-// A record of a completed call order for status display
-export interface RecentCallStatus {
-  reference: string;
-  receivedAt: Date;
-  estimatedTime: string;
-}
-
 export interface CallDetails {
   id: string;
   roomNumber: string;
@@ -73,6 +66,8 @@ export interface CallDetails {
 export type InterfaceLayer = 'interface1' | 'interface2' | 'interface3' | 'interface3vi' | 'interface4';
 
 export interface AssistantContextType {
+  activeOrders: ActiveOrder[];
+  addActiveOrder: (order: ActiveOrder) => void;
   currentInterface: InterfaceLayer;
   setCurrentInterface: (layer: InterfaceLayer) => void;
   transcripts: Transcript[];
@@ -99,7 +94,11 @@ export interface AssistantContextType {
   setEmailSentForCurrentSession: (sent: boolean) => void;
   requestReceivedAt: Date | null;
   setRequestReceivedAt: (date: Date) => void;
-  // History of call statuses for interface1
-  recentCalls: RecentCallStatus[];
-  addRecentCall: (call: RecentCallStatus) => void;
+}
+
+// Represents an order item in the status panel
+export interface ActiveOrder {
+  reference: string;
+  requestedAt: Date;
+  estimatedTime: string;
 }

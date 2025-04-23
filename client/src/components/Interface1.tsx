@@ -7,21 +7,14 @@ interface Interface1Props {
 }
 
 const Interface1: React.FC<Interface1Props> = ({ isActive }) => {
-  const { startCall, recentCalls } = useAssistant();
+  const { startCall, activeOrders } = useAssistant();
   
-  // Track current time to drive countdowns
+  // Track current time for countdown calculations
   const [now, setNow] = useState(new Date());
   useEffect(() => {
-    if (recentCalls.length === 0) return;
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
-  }, [recentCalls]);
-  // Format seconds to MM:SS
-  const formatCountdown = (sec: number) => {
-    const m = Math.floor(sec / 60).toString().padStart(2, '0');
-    const s = (sec % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-  };
+  }, []);
 
   return (
     <div 
@@ -36,16 +29,19 @@ const Interface1: React.FC<Interface1Props> = ({ isActive }) => {
       }}
     >
       <div className="container mx-auto h-full flex flex-col items-center justify-start text-white p-5 pt-10 md:pt-16 overflow-y-auto">
-        {/* Status boxes for recent calls within 60 minutes */}
-        {recentCalls.map((call) => {
-          const elapsed = Math.floor((now.getTime() - new Date(call.receivedAt).getTime()) / 1000);
-          const remaining = 60 * 60 - elapsed;
-          if (remaining <= 0) return null;
+        {/* Active orders status panels (up to 60 min countdown) */}
+        {activeOrders.map((o) => {
+          const deadline = new Date(o.requestedAt.getTime() + 60 * 60 * 1000);
+          const diffSec = Math.max(Math.ceil((deadline.getTime() - now.getTime()) / 1000), 0);
+          if (diffSec <= 0) return null;
+          const mins = Math.floor(diffSec / 60).toString().padStart(2, '0');
+          const secs = (diffSec % 60).toString().padStart(2, '0');
           return (
-            <div key={call.reference} className="bg-white/80 backdrop-blur-sm p-3 rounded-md mb-4 text-gray-800 shadow-md max-w-sm w-full">
-              <p className="text-sm mb-1"><strong>Order Reference:</strong> {call.reference}</p>
-              <p className="text-sm mb-1"><strong>Time Remaining:</strong> {formatCountdown(remaining)}</p>
-              <p className="text-sm"><strong>Estimated Delivery:</strong> {call.estimatedTime}</p>
+            <div key={o.reference} className="bg-white/80 backdrop-blur-sm p-3 rounded-md mb-4 text-gray-800 shadow-md max-w-sm w-full">
+              <p className="text-sm mb-1"><strong>Order Ref:</strong> {o.reference}</p>
+              <p className="text-sm mb-1"><strong>Requested At:</strong> {o.requestedAt.toLocaleString('en-US', {timeZone: 'Asia/Ho_Chi_Minh', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'})}</p>
+              <p className="text-sm mb-1"><strong>Estimated Completion:</strong> {o.estimatedTime}</p>
+              <p className="text-sm"><strong>Time Remaining:</strong> {`${mins}:${secs}`}</p>
             </div>
           );
         })}
