@@ -149,7 +149,6 @@ const CallHistory: React.FC = () => {
                     <th className="p-3 text-left text-sm font-medium text-gray-500">Time</th>
                     <th className="p-3 text-left text-sm font-medium text-gray-500">Room</th>
                     <th className="p-3 text-left text-sm font-medium text-gray-500">Duration</th>
-                    <th className="p-3 text-left text-sm font-medium text-gray-500">Order Reference</th>
                     <th className="p-3 text-left text-sm font-medium text-gray-500">Summary</th>
                     <th className="p-3 text-center text-sm font-medium text-gray-500">Actions</th>
                   </tr>
@@ -160,7 +159,6 @@ const CallHistory: React.FC = () => {
                       <td className="p-3 text-sm text-gray-700">{formatDate(summary.timestamp)}</td>
                       <td className="p-3 text-sm text-gray-700">{summary.roomNumber || 'Unknown'}</td>
                       <td className="p-3 text-sm text-gray-700">{formatDuration(summary.duration)}</td>
-                      <td className="p-3 text-sm text-gray-700">{`#ORD-${summary.callId}`}</td>
                       <td className="p-3 text-sm text-gray-700 max-w-md">
                         <div className="truncate">{summary.content}</div>
                       </td>
