@@ -29,6 +29,8 @@ interface AssistantContextType {
   translateToVietnamese: (text: string) => Promise<string>;
   emailSentForCurrentSession: boolean;
   setEmailSentForCurrentSession: (sent: boolean) => void;
+  requestReceivedAt: Date | null;
+  setRequestReceivedAt: (date: Date | null) => void;
 }
 
 const initialOrderSummary: OrderSummary = {
@@ -74,6 +76,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
   const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([]);
   const [vietnameseSummary, setVietnameseSummary] = useState<string | null>(null);
   const [emailSentForCurrentSession, setEmailSentForCurrentSession] = useState<boolean>(false);
+  const [requestReceivedAt, setRequestReceivedAt] = useState<Date | null>(null);
 
   // Add transcript to the list
   const addTranscript = React.useCallback((transcript: Omit<Transcript, 'id' | 'timestamp' | 'callId'>) => {
@@ -240,6 +243,8 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
 
   // Start call function
   const startCall = async () => {
+    // Record request received time
+    setRequestReceivedAt(new Date());
     if (vapiInstance) {
       try {
         const assistant = import.meta.env.VITE_VAPI_ASSISTANT_ID || "demo";
@@ -497,7 +502,9 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     setVietnameseSummary,
     translateToVietnamese,
     emailSentForCurrentSession,
-    setEmailSentForCurrentSession
+    setEmailSentForCurrentSession,
+    requestReceivedAt,
+    setRequestReceivedAt,
   };
 
   return (

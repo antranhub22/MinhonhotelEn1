@@ -90,4 +90,6 @@ export interface AssistantContextType {
   translateToVietnamese: (text: string) => Promise<string>;
   emailSentForCurrentSession: boolean;
   setEmailSentForCurrentSession: (sent: boolean) => void;
+  requestReceivedAt: Date | null;
+  setRequestReceivedAt: (date: Date) => void;
 }
