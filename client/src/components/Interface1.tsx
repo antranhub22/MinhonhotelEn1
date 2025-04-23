@@ -45,66 +45,64 @@ const Interface1: React.FC<Interface1Props> = ({ isActive }) => {
         <div className="text-center w-full max-w-5xl">
           <h3 className="font-poppins font-semibold text-xl mb-4">Available Services:</h3>
           
-          <div className="flex flex-row flex-wrap justify-center gap-3 text-left mx-auto">
-            {/* Comprehensive Hotel Services */}
-            <div className="bg-white/10 p-3 rounded-lg backdrop-blur-sm w-64">
-              <h4 className="font-medium text-amber-400 border-b border-amber-400/30 pb-1 mb-2 text-sm">Room & Stay</h4>
-              <ul className="space-y-1 text-sm">
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">login</span><span>Check-in/check-out - Notification for room status</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">update</span><span>Room extension - Extend your stay duration</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">info</span><span>Room information - Details, amenities, and instructions</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">policy</span><span>Hotel policies - Rules and guidelines</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">wifi</span><span>Wi-Fi & Technical support - Connection and troubleshooting</span></li>
-              </ul>
-            </div>
-            {/* Room Services */}
-            <div className="bg-white/10 p-3 rounded-lg backdrop-blur-sm w-64">
-              <h4 className="font-medium text-amber-400 border-b border-amber-400/30 pb-1 mb-2 text-sm">Room Services</h4>
-              <ul className="space-y-1 text-sm">
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">restaurant</span><span>Food & beverages - Menu and ordering</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">local_bar</span><span>Mini bar service - Refills and billing</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">cleaning_services</span><span>Housekeeping - Requests and scheduling</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">laundry</span><span>Laundry - Pricing and timing</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">alarm</span><span>Wake-up service - Set alarms</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">towels</span><span>Additional amenities - Towels, toiletries...</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">support_agent</span><span>Technical assistance - Repairs and support</span></li>
-              </ul>
-            </div>
-            {/* Bookings & Facilities */}
-            <div className="bg-white/10 p-3 rounded-lg backdrop-blur-sm w-64">
-              <h4 className="font-medium text-amber-400 border-b border-amber-400/30 pb-1 mb-2 text-sm">Bookings & Facilities</h4>
-              <ul className="space-y-1 text-sm">
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">restaurant</span><span>Restaurant reservations - In and outside the hotel</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">spa</span><span>Spa/massage appointments - Services and treatments outside the hotel</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">fitness_center</span><span>Gym facilities - Services outside the hotel</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">pool</span><span>Swimming pool - Opening hours and regulations</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">local_taxi</span><span>Transportation - Taxi and airport shuttle services</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">medical_services</span><span>Medical assistance - Doctor contacts and pharmaceuticals</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">emoji_people</span><span>Special assistance - Personalized requests</span></li>
-              </ul>
-            </div>
-            {/* Tourism & Exploration */}
-            <div className="bg-white/10 p-3 rounded-lg backdrop-blur-sm w-64">
-              <h4 className="font-medium text-amber-400 border-b border-amber-400/30 pb-1 mb-2 text-sm">Tourism & Exploration</h4>
-              <ul className="space-y-1 text-sm">
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">explore</span><span>Nearby attractions - Locations and reviews</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">restaurant</span><span>Local restaurants - Recommendations and reservations</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">directions_bus</span><span>Public transportation - Schedules and tickets</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">directions_car</span><span>Car rental - Bookings and suggestions</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">cloud</span><span>Weather & Events - Forecasts and event calendars</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">shopping_bag</span><span>Shopping - Malls and specialty stores</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">tour</span><span>Tours - Tour bookings and information</span></li>
-              </ul>
-            </div>
-            {/* Support */}
-            <div className="bg-white/10 p-3 rounded-lg backdrop-blur-sm w-64">
-              <h4 className="font-medium text-amber-400 border-b border-amber-400/30 pb-1 mb-2 text-sm">Support</h4>
-              <ul className="space-y-1 text-sm">
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">translate</span><span>Language assistance - Translation and support</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">feedback</span><span>Feedback & Reviews - Suggestions and comments</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">warning</span><span>Emergency support - 24/7 contact</span></li>
-                <li className="flex items-start"><span className="material-icons text-amber-400 mr-1 mt-0.5 text-base">luggage</span><span>Luggage service - Storage and transport</span></li>
-              </ul>
+          <div className="bg-white/10 p-6 rounded-lg backdrop-blur-sm max-w-3xl mx-auto">
+            <h4 className="font-medium text-amber-400 border-b border-amber-400/30 pb-2 mb-4 text-lg">Available Services</h4>
+            <div className="space-y-4 text-sm text-white">
+              <div>
+                <p className="font-semibold mb-1">Room & Stay</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Check-in/check-out - Notification for room status</li>
+                  <li>Room extension - Extend your stay duration</li>
+                  <li>Room information - Details, amenities, and instructions</li>
+                  <li>Hotel policies - Rules and guidelines</li>
+                  <li>Wi-Fi & Technical support - Connection and troubleshooting</li>
+                </ul>
+              </div>
+              <div>
+                <p className="font-semibold mb-1">Room Services</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Food & beverages - Menu and ordering</li>
+                  <li>Mini bar service - Refills and billing</li>
+                  <li>Housekeeping - Requests and scheduling</li>
+                  <li>Laundry - Pricing and timing</li>
+                  <li>Wake-up service - Set alarms</li>
+                  <li>Additional amenities - Towels, toiletries...</li>
+                  <li>Technical assistance - Repairs and support</li>
+                </ul>
+              </div>
+              <div>
+                <p className="font-semibold mb-1">Bookings & Facilities</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Restaurant reservations - In and outside the hotel</li>
+                  <li>Spa/massage appointments - Services and treatments outside the hotel</li>
+                  <li>Gym facilities - Services outside the hotel</li>
+                  <li>Swimming pool - Opening hours and regulations</li>
+                  <li>Transportation - Taxi and airport shuttle services</li>
+                  <li>Medical assistance - Doctor contacts and pharmaceuticals</li>
+                  <li>Special assistance - Personalized requests</li>
+                </ul>
+              </div>
+              <div>
+                <p className="font-semibold mb-1">Tourism & Exploration</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Nearby attractions - Locations and reviews</li>
+                  <li>Local restaurants - Recommendations and reservations</li>
+                  <li>Public transportation - Schedules and tickets</li>
+                  <li>Car rental - Bookings and suggestions</li>
+                  <li>Weather & Events - Forecasts and event calendars</li>
+                  <li>Shopping - Malls and specialty stores</li>
+                  <li>Tours - Tour bookings and information</li>
+                </ul>
+              </div>
+              <div>
+                <p className="font-semibold mb-1">Support</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Language assistance - Translation and support</li>
+                  <li>Feedback & Reviews - Suggestions and comments</li>
+                  <li>Emergency support - 24/7 contact</li>
+                  <li>Luggage service - Storage and transport</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
