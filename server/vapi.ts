@@ -1,4 +1,4 @@
-import Vapi from '@vapi-ai/web';
+import { Vapi } from '@vapi-ai/web';
 
 if (!process.env.VAPI_API_KEY) {
   throw new Error('VAPI_API_KEY is not set in environment variables');

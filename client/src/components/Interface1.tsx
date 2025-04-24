@@ -7,7 +7,7 @@ interface Interface1Props {
 }
 
 const Interface1: React.FC<Interface1Props> = ({ isActive }) => {
-  const { startCall, activeOrders, transcripts } = useAssistant();
+  const { startCall, activeOrders } = useAssistant();
   
   // Track current time for countdown calculations
   const [now, setNow] = useState(new Date());
@@ -45,15 +45,6 @@ const Interface1: React.FC<Interface1Props> = ({ isActive }) => {
             </div>
           );
         })}
-        {/* Transcripts display panel */}
-        <div className="w-full max-w-sm bg-white/80 backdrop-blur-sm p-4 rounded-md mb-4 text-gray-800 overflow-y-auto" style={{ maxHeight: '200px' }}>
-          {transcripts.map((t) => (
-            <div key={t.id} className={`mb-2 ${t.role === 'assistant' ? 'text-blue-700' : 'text-gray-700'}`}>
-              <p className="text-xs font-semibold">{t.role === 'assistant' ? 'Assistant' : 'You'}</p>
-              <p className="text-sm">{t.content}</p>
-            </div>
-          ))}
-        </div>
         <h2 className="font-poppins font-bold text-3xl md:text-4xl text-amber-400 mb-2 text-center">Mi Nhon Hotel Mui Ne</h2>
         <p className="text-lg md:text-xl text-center max-w-lg mb-8">AI-powered Voice Assistant - Supporting All Your Needs</p>
         

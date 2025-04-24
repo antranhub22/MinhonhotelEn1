@@ -81,36 +81,8 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
   const [requestReceivedAt, setRequestReceivedAt] = useState<Date | null>(null);
   const [activeOrders, setActiveOrders] = useState<ActiveOrder[]>([]);
 
-  // Load persisted active orders from localStorage on mount
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('activeOrders');
-      if (stored) {
-        const parsed: ActiveOrder[] = JSON.parse(stored);
-        // Restore Date objects for requestedAt
-        const restored = parsed.map(o => ({
-          ...o,
-          requestedAt: new Date(o.requestedAt)
-        }));
-        setActiveOrders(restored);
-      }
-    } catch (err) {
-      console.error('Error loading activeOrders from localStorage:', err);
-      localStorage.removeItem('activeOrders');
-    }
-  }, []);
-
-  // Persist activeOrders whenever a new order is added
   const addActiveOrder = (order: ActiveOrder) => {
-    setActiveOrders(prev => {
-      const newOrders = [...prev, order];
-      try {
-        localStorage.setItem('activeOrders', JSON.stringify(newOrders));
-      } catch (e) {
-        console.error('Error saving activeOrders to localStorage:', e);
-      }
-      return newOrders;
-    });
+    setActiveOrders(prev => [...prev, order]);
   };
 
   // Add transcript to the list
