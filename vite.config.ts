@@ -5,6 +5,12 @@ import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
 export default defineConfig({
+  optimizeDeps: {
+    exclude: ['@babel/preset-typescript', 'lightningcss']
+  },
+  ssr: {
+    external: ['@babel/preset-typescript', 'lightningcss']
+  },
   plugins: [
     react(),
     runtimeErrorOverlay(),
