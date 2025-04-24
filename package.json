@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.37.0",
+    "@babel/preset-typescript": "^7.27.0",
     "@hookform/resolvers": "^3.9.1",
     "@jridgewell/trace-mapping": "^0.3.25",
     "@neondatabase/serverless": "^0.10.4",
@@ -64,6 +65,7 @@
     "framer-motion": "^11.13.1",
     "input-otp": "^1.2.4",
     "jsonwebtoken": "^9.0.2",
+    "lightningcss": "^1.29.3",
     "lucide-react": "^0.453.0",
     "memorystore": "^1.6.7",
     "mongoose": "^8.13.2",
