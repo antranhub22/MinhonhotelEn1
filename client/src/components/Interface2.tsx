@@ -28,18 +28,18 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
   
   // Update references when new transcripts arrive
   useEffect(() => {
-    // Scan all transcripts for matching references
-    const allMatches: ReferenceItem[] = [];
-    transcripts.forEach(t => {
-      const found = referenceService.findReferences(t.content);
+    // Only look at user messages for reference requests
+    const userMessages = transcripts.filter(t => t.role === 'user');
+    const matches: ReferenceItem[] = [];
+    userMessages.forEach(msg => {
+      const found = referenceService.findReferences(msg.content);
       found.forEach(ref => {
-        if (!allMatches.find(m => m.url === ref.url)) {
-          allMatches.push(ref);
+        if (!matches.find(m => m.url === ref.url)) {
+          matches.push(ref);
         }
       });
     });
-    // Update state with unique matches from entire conversation
-    setReferences(allMatches);
+    setReferences(matches);
   }, [transcripts]);
   
   // Wrapper for endCall to include local duration if needed
@@ -197,8 +197,8 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
             </div>
           </div>
 
-          {/* Right side - References */}
-          <div className="w-1/3 flex flex-col">
+          {/* Right side - References with scrollable container */}
+          <div className="w-1/3 flex flex-col overflow-y-auto" style={{ maxHeight: '100%' }}>
             <Reference references={references} />
           </div>
         </div>
