@@ -11,6 +11,9 @@ import { sendServiceConfirmation, sendCallSummary } from "./gmail";
 import { sendMobileEmail, sendMobileCallSummary } from "./mobileMail";
 import axios from "axios";
 import { Reference, IReference } from './models/Reference';
+import express from 'express';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 // Initialize OpenAI client 
 const openai = new OpenAI({
@@ -945,6 +948,38 @@ Mi Nhon Hotel Mui Ne`
     } catch (error) {
       console.error('Invalid REFERENCE_MAP env var:', error);
       res.status(500).json({ error: 'Invalid REFERENCE_MAP JSON' });
+    }
+  });
+
+  // Staff login endpoint
+  app.post('/api/auth/login', express.json(), (req, res) => {
+    const { username, password } = req.body;
+    const envUser = process.env.STAFF_USERNAME;
+    const envPass = process.env.STAFF_PASSWORD;
+    const jwtSecret = process.env.JWT_SECRET || 'secret';
+    
+    if (username === envUser && password === envPass) {
+      // Issue token
+      const token = jwt.sign({ username }, jwtSecret, { expiresIn: '1d' });
+      res.json({ token });
+    } else {
+      res.status(401).json({ error: 'Invalid credentials' });
+    }
+  });
+
+  // Get current auth status
+  app.get('/api/auth/me', (req, res) => {
+    const authHeader = req.headers.authorization;
+    const jwtSecret = process.env.JWT_SECRET || 'secret';
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ authenticated: false });
+    }
+    const token = authHeader.split(' ')[1];
+    try {
+      const payload = jwt.verify(token, jwtSecret);
+      res.json({ authenticated: true, user: (payload as any).username });
+    } catch (e) {
+      res.status(401).json({ authenticated: false });
     }
   });
 
