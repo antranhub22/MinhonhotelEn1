@@ -7,12 +7,8 @@ interface Interface1Props {
 }
 
 const Interface1: React.FC<Interface1Props> = ({ isActive }) => {
-  const { startCall, activeOrders, transcripts, addTranscript, staffMessages, addStaffMessage, callDetails } = useAssistant();
+  const { startCall, activeOrders, transcripts } = useAssistant();
   
-  // Local state for staff input and selected reference
-  const [staffInput, setStaffInput] = useState('');
-  const [selectedRef, setSelectedRef] = useState(activeOrders[0]?.reference || '');
-
   // Track current time for countdown calculations
   const [now, setNow] = useState(new Date());
   useEffect(() => {
@@ -33,58 +29,6 @@ const Interface1: React.FC<Interface1Props> = ({ isActive }) => {
       }}
     >
       <div className="container mx-auto h-full flex flex-col items-center justify-start text-white p-5 pt-10 md:pt-16 overflow-y-auto">
-        {/* Display contextual messages for user */}
-        {transcripts.length > 0 && (
-          <div className="w-full max-w-md mb-4 p-3 bg-white/20 rounded-md">
-            {transcripts.map(t => (
-              <p key={t.id} className="text-white mb-1">{t.content}</p>
-            ))}
-          </div>
-        )}
-        {/* Staff Updates Panel */}
-        <div className="w-full max-w-md mb-4 p-3 bg-white/20 rounded-md">
-          <h3 className="text-lg font-semibold mb-2">Staff Updates</h3>
-          <div className="max-h-40 overflow-y-auto mb-2">
-            {staffMessages.map(msg => (
-              <div key={msg.id} className="mb-1 text-white">
-                <span className="text-sm mr-2">[{new Date(msg.timestamp).toLocaleTimeString()}]</span>
-                <span className="text-sm">{msg.content}</span>
-              </div>
-            ))}
-          </div>
-          <form onSubmit={e => {
-              e.preventDefault();
-              if (staffInput.trim() && selectedRef) {
-                addStaffMessage({
-                  callId: callDetails?.id || '',
-                  orderReference: selectedRef,
-                  content: staffInput.trim()
-                });
-                setStaffInput('');
-              }
-            }}>
-            <input
-              type="text"
-              className="w-full p-2 rounded-l bg-white text-gray-800 focus:outline-none"
-              placeholder="Enter update..."
-              value={staffInput}
-              onChange={e => setStaffInput(e.target.value)}
-            />
-            <select
-              className="p-2 bg-white text-gray-800 focus:outline-none border-l"
-              value={selectedRef}
-              onChange={e => setSelectedRef(e.target.value)}
-            >
-              {activeOrders.map(o => (
-                <option key={o.reference} value={o.reference}>{o.reference}</option>
-              ))}
-            </select>
-            <button
-              type="submit"
-              className="p-2 bg-amber-400 rounded-r text-white font-medium"
-            >Send</button>
-          </form>
-        </div>
         {/* Active orders status panels (up to 60 min countdown) */}
         {activeOrders.map((o) => {
           const deadline = new Date(o.requestedAt.getTime() + 60 * 60 * 1000);
@@ -101,6 +45,15 @@ const Interface1: React.FC<Interface1Props> = ({ isActive }) => {
             </div>
           );
         })}
+        {/* Transcripts display panel */}
+        <div className="w-full max-w-sm bg-white/80 backdrop-blur-sm p-4 rounded-md mb-4 text-gray-800 overflow-y-auto" style={{ maxHeight: '200px' }}>
+          {transcripts.map((t) => (
+            <div key={t.id} className={`mb-2 ${t.role === 'assistant' ? 'text-blue-700' : 'text-gray-700'}`}>
+              <p className="text-xs font-semibold">{t.role === 'assistant' ? 'Assistant' : 'You'}</p>
+              <p className="text-sm">{t.content}</p>
+            </div>
+          ))}
+        </div>
         <h2 className="font-poppins font-bold text-3xl md:text-4xl text-amber-400 mb-2 text-center">Mi Nhon Hotel Mui Ne</h2>
         <p className="text-lg md:text-xl text-center max-w-lg mb-8">AI-powered Voice Assistant - Supporting All Your Needs</p>
         

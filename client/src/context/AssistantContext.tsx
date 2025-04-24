@@ -4,15 +4,6 @@ import { initVapi, vapiInstance, FORCE_BASIC_SUMMARY } from '@/lib/vapiClient';
 import { apiRequest } from '@/lib/queryClient';
 import { parseSummaryToOrderDetails } from '@/lib/summaryParser';
 
-// Define StaffMessage type for updates
-interface StaffMessage {
-  id: number;
-  callId: string;
-  orderReference: string;
-  content: string;
-  timestamp: Date;
-}
-
 interface AssistantContextType {
   currentInterface: InterfaceLayer;
   setCurrentInterface: (layer: InterfaceLayer) => void;
@@ -42,9 +33,6 @@ interface AssistantContextType {
   setRequestReceivedAt: (date: Date | null) => void;
   activeOrders: ActiveOrder[];
   addActiveOrder: (order: ActiveOrder) => void;
-  // Staff update messages
-  staffMessages: StaffMessage[];
-  addStaffMessage: (msg: { callId: string; orderReference: string; content: string }) => void;
 }
 
 const initialOrderSummary: OrderSummary = {
@@ -92,8 +80,6 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
   const [emailSentForCurrentSession, setEmailSentForCurrentSession] = useState<boolean>(false);
   const [requestReceivedAt, setRequestReceivedAt] = useState<Date | null>(null);
   const [activeOrders, setActiveOrders] = useState<ActiveOrder[]>([]);
-  // Staff messages state
-  const [staffMessages, setStaffMessages] = useState<StaffMessage[]>([]);
 
   // Load persisted active orders from localStorage on mount
   useEffect(() => {
@@ -125,18 +111,6 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       }
       return newOrders;
     });
-  };
-
-  // Staff messages state
-  const addStaffMessage = (msg: { callId: string; orderReference: string; content: string }) => {
-    const newMsg: StaffMessage = {
-      id: Date.now(),
-      callId: msg.callId,
-      orderReference: msg.orderReference,
-      content: msg.content,
-      timestamp: new Date()
-    };
-    setStaffMessages(prev => [...prev, newMsg]);
   };
 
   // Add transcript to the list
@@ -568,9 +542,6 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     setRequestReceivedAt,
     activeOrders,
     addActiveOrder,
-    // Staff updates
-    staffMessages,
-    addStaffMessage
   };
 
   return (
