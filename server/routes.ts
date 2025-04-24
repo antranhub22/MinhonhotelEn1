@@ -954,17 +954,24 @@ Mi Nhon Hotel Mui Ne`
   // Staff login endpoint
   app.post('/api/auth/login', express.json(), (req, res) => {
     const { username, password } = req.body;
-    const envUser = process.env.STAFF_USERNAME;
-    const envPass = process.env.STAFF_PASSWORD;
     const jwtSecret = process.env.JWT_SECRET || 'secret';
-    
-    if (username === envUser && password === envPass) {
-      // Issue token
-      const token = jwt.sign({ username }, jwtSecret, { expiresIn: '1d' });
-      res.json({ token });
-    } else {
-      res.status(401).json({ error: 'Invalid credentials' });
+    // Load credentials array from env var
+    let creds: { username: string; password: string }[] = [];
+    try {
+      const raw = process.env.STAFF_CREDENTIALS || '[]';
+      creds = JSON.parse(raw);
+    } catch (e) {
+      console.error('Invalid STAFF_CREDENTIALS env var:', e);
+      return res.status(500).json({ error: 'Invalid credentials configuration' });
     }
+    // Find matching user
+    const user = creds.find(u => u.username === username);
+    if (user && user.password === password) {
+      // Issue JWT token
+      const token = jwt.sign({ username }, jwtSecret, { expiresIn: '1d' });
+      return res.json({ token });
+    }
+    return res.status(401).json({ error: 'Invalid credentials' });
   });
 
   // Get current auth status
