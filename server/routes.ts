@@ -936,5 +936,17 @@ Mi Nhon Hotel Mui Ne`
     }
   });
 
+  // Serve reference map from environment variable
+  app.get('/api/reference-map', (_req, res) => {
+    try {
+      const raw = process.env.REFERENCE_MAP || '{}';
+      const map = JSON.parse(raw);
+      res.json(map);
+    } catch (error) {
+      console.error('Invalid REFERENCE_MAP env var:', error);
+      res.status(500).json({ error: 'Invalid REFERENCE_MAP JSON' });
+    }
+  });
+
   return httpServer;
 }
