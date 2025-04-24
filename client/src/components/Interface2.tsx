@@ -1,5 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useAssistant } from '@/context/AssistantContext';
+import Reference from './Reference';
+import { referenceService, ReferenceItem } from '@/services/ReferenceService';
 
 interface Interface2Props {
   isActive: boolean;
@@ -15,6 +17,38 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
     toggleMute,
     setCurrentInterface
   } = useAssistant();
+  
+  // Add state for references
+  const [references, setReferences] = useState<ReferenceItem[]>([]);
+  
+  // Initialize reference service
+  useEffect(() => {
+    referenceService.initialize();
+  }, []);
+  
+  // Update references when new transcripts arrive
+  useEffect(() => {
+    if (transcripts.length > 0) {
+      // Get the latest transcript
+      const latestTranscript = transcripts[transcripts.length - 1];
+      
+      // Find relevant references based on the content
+      const foundReferences = referenceService.findReferences(latestTranscript.content);
+      
+      // Update references state if new ones are found
+      if (foundReferences.length > 0) {
+        setReferences(prev => {
+          const newRefs = [...prev];
+          foundReferences.forEach(ref => {
+            if (!newRefs.find(r => r.url === ref.url)) {
+              newRefs.push(ref);
+            }
+          });
+          return newRefs;
+        });
+      }
+    }
+  }, [transcripts]);
   
   // Wrapper for endCall to include local duration if needed
   const endCall = () => {
@@ -85,87 +119,95 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
       }}
     >
       <div className="container mx-auto h-full flex flex-col p-5">
-        <div className="w-2/3 mx-auto bg-white rounded-lg shadow-md p-5 mb-5 overflow-hidden flex flex-col">
-          <div className="mb-4 pb-3 border-b border-gray-200 flex justify-between items-center">
-            <h2 className="font-poppins font-semibold text-xl text-primary">RealTime Conversation</h2>
-            <div className="flex items-center space-x-3">
-              <button
-                className="text-red-500 hover:text-red-600 text-sm"
-                onClick={() => setCurrentInterface('interface1')}
-              >
-                Cancel
-              </button>
-              <span id="callStatus" className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500 text-white">
-                <span className="dot w-2 h-2 rounded-full bg-white mr-1.5 inline-block"></span>
-                Active Call
-              </span>
+        <div className="flex flex-row gap-5 h-full">
+          {/* Left side - Conversation */}
+          <div className="w-2/3 bg-white rounded-lg shadow-md p-5 mb-5 overflow-hidden flex flex-col">
+            <div className="mb-4 pb-3 border-b border-gray-200 flex justify-between items-center">
+              <h2 className="font-poppins font-semibold text-xl text-primary">RealTime Conversation</h2>
+              <div className="flex items-center space-x-3">
+                <button
+                  className="text-red-500 hover:text-red-600 text-sm"
+                  onClick={() => setCurrentInterface('interface1')}
+                >
+                  Cancel
+                </button>
+                <span id="callStatus" className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500 text-white">
+                  <span className="dot w-2 h-2 rounded-full bg-white mr-1.5 inline-block"></span>
+                  Active Call
+                </span>
+              </div>
             </div>
-          </div>
-          
-          {/* Realtime Conversation Container */}
-          <div 
-            id="realTimeConversation" 
-            ref={conversationRef}
-            className="flex-grow overflow-y-auto mb-4 p-2"
-          >
-            {transcripts.map((transcript) => (
-              <div className="mb-4 last:mb-0" key={transcript.id}>
-                <div className="flex items-start mb-1">
-                  <div className={`w-8 h-8 rounded-full ${
-                    transcript.role === 'assistant' ? 'bg-primary text-white' : 'bg-amber-400 text-primary-dark'
-                  } flex items-center justify-center mr-2 flex-shrink-0`}>
-                    <span className="material-icons text-sm">
-                      {transcript.role === 'assistant' ? 'support_agent' : 'person'}
-                    </span>
-                  </div>
-                  <div className="flex-grow">
-                    <p className="text-sm text-gray-500 mb-1">
-                      {transcript.role === 'assistant' ? 'Assistant' : 'You'}
-                    </p>
-                    <p className="text-gray-800">{transcript.content}</p>
+            
+            {/* Realtime Conversation Container */}
+            <div 
+              id="realTimeConversation" 
+              ref={conversationRef}
+              className="flex-grow overflow-y-auto mb-4 p-2"
+            >
+              {transcripts.map((transcript) => (
+                <div className="mb-4 last:mb-0" key={transcript.id}>
+                  <div className="flex items-start mb-1">
+                    <div className={`w-8 h-8 rounded-full ${
+                      transcript.role === 'assistant' ? 'bg-primary text-white' : 'bg-amber-400 text-primary-dark'
+                    } flex items-center justify-center mr-2 flex-shrink-0`}>
+                      <span className="material-icons text-sm">
+                        {transcript.role === 'assistant' ? 'support_agent' : 'person'}
+                      </span>
+                    </div>
+                    <div className="flex-grow">
+                      <p className="text-sm text-gray-500 mb-1">
+                        {transcript.role === 'assistant' ? 'Assistant' : 'You'}
+                      </p>
+                      <p className="text-gray-800">{transcript.content}</p>
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
+            
+            {/* Call Controls with Duration */}
+            <div className="flex justify-between items-center pt-3 border-t border-gray-200">
+              <div className="flex-1 flex justify-start items-center">
+                <button 
+                  id="muteButton" 
+                  className={`mx-2 w-12 h-12 rounded-full ${isMuted ? 'bg-gray-400' : 'bg-gray-200'} flex items-center justify-center text-gray-700`}
+                  onClick={toggleMute}
+                >
+                  <span className="material-icons">{isMuted ? 'mic_off' : 'mic'}</span>
+                </button>
+                <button 
+                  id="speakerButton" 
+                  className="mx-2 w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-700"
+                >
+                  <span className="material-icons">volume_up</span>
+                </button>
               </div>
-            ))}
+              
+              <div className="flex-1 flex justify-center">
+                <button 
+                  id="endCallButton" 
+                  className="mx-2 w-16 h-16 rounded-full bg-red-500 flex items-center justify-center text-white shadow-md"
+                  onClick={endCall}
+                >
+                  <span className="material-icons">call_end</span>
+                </button>
+              </div>
+              
+              {/* Duration directly in controls bar */}
+              <div className="flex-1 flex justify-end items-center">
+                <div className="px-3 py-2 bg-gray-100 rounded-lg">
+                  <p className="text-xs font-semibold text-gray-500 text-center mb-0">Duration</p>
+                  <p className="font-medium text-center text-xl text-primary" id="callDuration">
+                    {formatDuration(callDuration > 0 ? callDuration : localDuration)}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-          
-          {/* Call Controls with Duration */}
-          <div className="flex justify-between items-center pt-3 border-t border-gray-200">
-            <div className="flex-1 flex justify-start items-center">
-              <button 
-                id="muteButton" 
-                className={`mx-2 w-12 h-12 rounded-full ${isMuted ? 'bg-gray-400' : 'bg-gray-200'} flex items-center justify-center text-gray-700`}
-                onClick={toggleMute}
-              >
-                <span className="material-icons">{isMuted ? 'mic_off' : 'mic'}</span>
-              </button>
-              <button 
-                id="speakerButton" 
-                className="mx-2 w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-700"
-              >
-                <span className="material-icons">volume_up</span>
-              </button>
-            </div>
-            
-            <div className="flex-1 flex justify-center">
-              <button 
-                id="endCallButton" 
-                className="mx-2 w-16 h-16 rounded-full bg-red-500 flex items-center justify-center text-white shadow-md"
-                onClick={endCall}
-              >
-                <span className="material-icons">call_end</span>
-              </button>
-            </div>
-            
-            {/* Duration directly in controls bar */}
-            <div className="flex-1 flex justify-end items-center">
-              <div className="px-3 py-2 bg-gray-100 rounded-lg">
-                <p className="text-xs font-semibold text-gray-500 text-center mb-0">Duration</p>
-                <p className="font-medium text-center text-xl text-primary" id="callDuration">
-                  {formatDuration(callDuration > 0 ? callDuration : localDuration)}
-                </p>
-              </div>
-            </div>
+
+          {/* Right side - References */}
+          <div className="w-1/3 flex flex-col">
+            <Reference references={references} />
           </div>
         </div>
       </div>

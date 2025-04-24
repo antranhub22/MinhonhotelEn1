@@ -10,6 +10,7 @@ import OpenAI from "openai";
 import { sendServiceConfirmation, sendCallSummary } from "./gmail";
 import { sendMobileEmail, sendMobileCallSummary } from "./mobileMail";
 import axios from "axios";
+import { Reference, IReference } from './models/Reference';
 
 // Initialize OpenAI client 
 const openai = new OpenAI({
@@ -895,6 +896,43 @@ Mi Nhon Hotel Mui Ne`
     } catch (dbError: any) {
       console.error('DB test error:', dbError);
       return res.status(500).json({ success: false, error: dbError.message });
+    }
+  });
+
+  // Get references for a specific call
+  app.get('/api/references/:callId', async (req, res) => {
+    try {
+      const { callId } = req.params;
+      const references = await Reference.find({ callId }).sort({ createdAt: -1 });
+      res.json(references);
+    } catch (error) {
+      console.error('Error fetching references:', error);
+      res.status(500).json({ error: 'Failed to fetch references' });
+    }
+  });
+
+  // Add a new reference
+  app.post('/api/references', async (req, res) => {
+    try {
+      const referenceData: IReference = req.body;
+      const reference = new Reference(referenceData);
+      await reference.save();
+      res.status(201).json(reference);
+    } catch (error) {
+      console.error('Error creating reference:', error);
+      res.status(500).json({ error: 'Failed to create reference' });
+    }
+  });
+
+  // Delete a reference
+  app.delete('/api/references/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      await Reference.findByIdAndDelete(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error('Error deleting reference:', error);
+      res.status(500).json({ error: 'Failed to delete reference' });
     }
   });
 
