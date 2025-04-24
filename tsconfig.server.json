@@ -2,7 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "dist/server",
-    "rootDir": ".",
+    "rootDir": "server",
     "module": "ESNext",
     "moduleResolution": "node",
     "esModuleInterop": true,
@@ -12,8 +12,9 @@
     "resolveJsonModule": true,
     "noImplicitAny": false,
     "forceConsistentCasingInFileNames": true,
-    "types": ["node", "express"]
+    "types": ["node", "express"],
+    "noEmit": false
   },
-  "include": ["server/**/*", "shared/**/*", "vite.config.ts"],
-  "exclude": ["node_modules", "dist", "client"]
+  "include": ["server/**/*", "shared/**/*"],
+  "exclude": ["node_modules", "dist", "client", "vite.config.ts"]
 } 
