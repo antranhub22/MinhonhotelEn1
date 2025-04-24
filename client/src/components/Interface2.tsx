@@ -28,26 +28,18 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
   
   // Update references when new transcripts arrive
   useEffect(() => {
-    if (transcripts.length > 0) {
-      // Get the latest transcript
-      const latestTranscript = transcripts[transcripts.length - 1];
-      
-      // Find relevant references based on the content
-      const foundReferences = referenceService.findReferences(latestTranscript.content);
-      
-      // Update references state if new ones are found
-      if (foundReferences.length > 0) {
-        setReferences(prev => {
-          const newRefs = [...prev];
-          foundReferences.forEach(ref => {
-            if (!newRefs.find(r => r.url === ref.url)) {
-              newRefs.push(ref);
-            }
-          });
-          return newRefs;
-        });
-      }
-    }
+    // Scan all transcripts for matching references
+    const allMatches: ReferenceItem[] = [];
+    transcripts.forEach(t => {
+      const found = referenceService.findReferences(t.content);
+      found.forEach(ref => {
+        if (!allMatches.find(m => m.url === ref.url)) {
+          allMatches.push(ref);
+        }
+      });
+    });
+    // Update state with unique matches from entire conversation
+    setReferences(allMatches);
   }, [transcripts]);
   
   // Wrapper for endCall to include local duration if needed
