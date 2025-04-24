@@ -111,9 +111,9 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
       }}
     >
       <div className="container mx-auto h-full flex flex-col p-5">
-        <div className="flex flex-row gap-5 h-full">
+        <div className="flex flex-col lg:flex-row gap-5 h-full">
           {/* Left side - Conversation */}
-          <div className="w-2/3 bg-white rounded-lg shadow-md p-5 mb-5 overflow-hidden flex flex-col">
+          <div className="w-full lg:w-2/3 bg-white rounded-lg shadow-md p-5 mb-5 overflow-hidden flex flex-col">
             <div className="mb-4 pb-3 border-b border-gray-200 flex justify-between items-center">
               <h2 className="font-poppins font-semibold text-xl text-primary">RealTime Conversation</h2>
               <div className="flex items-center space-x-3">
@@ -198,7 +198,7 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
           </div>
 
           {/* Right side - References with scrollable container */}
-          <div className="w-1/3 flex flex-col overflow-y-auto" style={{ maxHeight: '100%' }}>
+          <div className="w-full lg:w-1/3 flex flex-col overflow-y-auto" style={{ maxHeight: '100%' }}>
             <Reference references={references} />
           </div>
         </div>
