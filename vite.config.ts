@@ -32,6 +32,7 @@ export default defineConfig({
     sourcemap: false,
     cssCodeSplit: true,
     rollupOptions: {
+      external: ['@babel/preset-typescript/package.json', 'lightningcss'],
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
