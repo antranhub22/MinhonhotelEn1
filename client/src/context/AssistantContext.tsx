@@ -83,8 +83,15 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     if (typeof window === 'undefined') return [];
     try {
       const stored = localStorage.getItem('activeOrders');
-      return stored ? JSON.parse(stored) as ActiveOrder[] : [];
-    } catch {
+      if (!stored) return [];
+      const parsed = JSON.parse(stored) as (ActiveOrder & { requestedAt: string })[];
+      // Convert requestedAt string back into Date
+      return parsed.map(o => ({
+        ...o,
+        requestedAt: new Date(o.requestedAt)
+      }));
+    } catch (err) {
+      console.error('Failed to parse activeOrders from localStorage', err);
       return [];
     }
   });
