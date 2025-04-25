@@ -32,6 +32,7 @@ export default defineConfig({
     sourcemap: false,
     cssCodeSplit: true,
     rollupOptions: {
+      external: ['@chakra-ui/react', '@emotion/react', '@emotion/styled'],
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
