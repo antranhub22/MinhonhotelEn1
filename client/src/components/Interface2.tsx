@@ -150,6 +150,11 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
           <button id="endCallButton" onClick={endCall} className="w-full lg:w-auto flex items-center justify-center px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs">
             <span className="material-icons mr-1 text-base">call_end</span>End Call
           </button>
+          {/* Call duration display */}
+          <div className="w-full lg:w-auto flex flex-col items-center mt-2 p-2 bg-gray-100 rounded text-center text-xs">
+            <span className="font-semibold">Duration</span>
+            <span id="callDuration">{formatDuration(callDuration > 0 ? callDuration : localDuration)}</span>
+          </div>
         </div>
       </div>
     </div>
