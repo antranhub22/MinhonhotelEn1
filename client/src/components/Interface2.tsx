@@ -114,7 +114,7 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
         {/* Left: Reference above Conversation */}
         <div className="w-3/4 lg:w-2/3 flex flex-col overflow-auto space-y-2" style={{ maxHeight: '100%' }}>
           <Reference references={references} />
-          <div id="realTimeConversation" ref={conversationRef} className="flex-1 overflow-y-auto p-2 bg-white rounded-lg shadow-inner">
+          <div id="realTimeConversation" ref={conversationRef} className="relative flex-1 overflow-y-auto p-2 bg-white rounded-lg shadow-inner">
             {[...transcripts].reverse().map((transcript) => (
               <div key={transcript.id} className="mb-2">
                 <div className="flex items-start mb-1">
@@ -134,11 +134,11 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
                 </div>
               </div>
             ))}
-          </div>
-          {/* Duration display below conversation container */}
-          <div className="mt-2 p-3 bg-white border-l-4 border-primary rounded shadow-lg">
-            <p className="text-center text-primary font-semibold">Duration</p>
-            <p className="text-center text-2xl font-bold mt-1">{formatDuration(localDuration)}</p>
+            {/* Circular Duration widget */}
+            <div className="absolute bottom-2 right-2 w-16 h-16 lg:w-20 lg:h-20 flex flex-col justify-center items-center bg-white border-4 border-primary rounded-full shadow-lg">
+              <span className="text-xs text-primary font-semibold">Duration</span>
+              <span className="text-sm lg:text-base font-bold">{formatDuration(localDuration)}</span>
+            </div>
           </div>
         </div>
         {/* Right: Control buttons */}
