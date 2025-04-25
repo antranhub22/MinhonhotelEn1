@@ -137,11 +137,19 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
           </div>
         </div>
         {/* Right: Control buttons */}
-        <div className="w-1/3 flex flex-col items-end p-2 space-y-2 overflow-auto" style={{ maxHeight: '100%' }}>
-          <button id="backButton" onClick={() => setCurrentInterface('interface1')} className="px-4 py-2 bg-gray-200 rounded">Back</button>
-          <button id="cancelButton" onClick={() => setCurrentInterface('interface1')} className="px-4 py-2 bg-gray-200 rounded">Cancel</button>
-          <button id="langButton" className="px-4 py-2 bg-gray-200 rounded">Tiếng Việt</button>
-          <button id="confirmButton" onClick={endCall} className="px-4 py-2 bg-green-500 text-white rounded">Confirm</button>
+        <div className="w-full lg:w-1/3 flex flex-col items-center lg:items-end p-2 space-y-2 overflow-auto" style={{ maxHeight: '100%' }}>
+          <button id="backButton" onClick={() => setCurrentInterface('interface1')} className="w-full lg:w-auto flex items-center justify-center px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm">
+            <span className="material-icons mr-1 text-base">arrow_back</span>Back
+          </button>
+          <button id="cancelButton" onClick={() => setCurrentInterface('interface1')} className="w-full lg:w-auto flex items-center justify-center px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm">
+            <span className="material-icons mr-1 text-base">cancel</span>Cancel
+          </button>
+          <button id="langButton" className="w-full lg:w-auto flex items-center justify-center px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm">
+            <span className="material-icons mr-1 text-base">language</span>Tiếng Việt
+          </button>
+          <button id="endCallButton" onClick={endCall} className="w-full lg:w-auto flex items-center justify-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm">
+            <span className="material-icons mr-1 text-base">call_end</span>End Call
+          </button>
         </div>
       </div>
     </div>
