@@ -92,10 +92,10 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
     };
   }, [isActive, callDuration]);
   
-  // Scroll to bottom of conversation when new messages arrive
+  // Scroll to top of conversation when new messages arrive
   useEffect(() => {
     if (conversationRef.current && isActive) {
-      conversationRef.current.scrollTop = conversationRef.current.scrollHeight;
+      conversationRef.current.scrollTop = 0;
     }
   }, [transcripts, isActive]);
   
@@ -136,7 +136,7 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
               ref={conversationRef}
               className="flex-grow overflow-y-auto mb-4 p-2"
             >
-              {transcripts.map((transcript) => (
+              {[...transcripts].reverse().map((transcript) => (
                 <div className="mb-4 last:mb-0" key={transcript.id}>
                   <div className="flex items-start mb-1">
                     <div className={`w-8 h-8 rounded-full ${
