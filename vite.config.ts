@@ -1,46 +1,29 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import themePlugin from "@replit/vite-plugin-shadcn-theme-json";
-import path from "path";
-import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import { fileURLToPath, URL } from 'url';
+
+// helper to use __dirname equivalent
+const root = fileURLToPath(new URL('./client', import.meta.url));
+const outDir = fileURLToPath(new URL('./dist/public', import.meta.url));
 
 export default defineConfig({
+  root,
   base: './',
-  plugins: [
-    react(),
-    runtimeErrorOverlay(),
-    themePlugin(),
-    ...(process.env.NODE_ENV !== "production" &&
-    process.env.REPL_ID !== undefined
-      ? [
-          await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer(),
-          ),
-        ]
-      : []),
-  ],
-  resolve: {
-    alias: {
-      "@": path.resolve(import.meta.dirname, "client", "src"),
-      "@shared": path.resolve(import.meta.dirname, "shared"),
-      "@assets": path.resolve(import.meta.dirname, "attached_assets"),
-    },
-  },
-  root: path.resolve(import.meta.dirname, "client"),
   build: {
-    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    outDir,
     emptyOutDir: true,
     sourcemap: false,
     cssCodeSplit: true,
-    rollupOptions: {
-      external: ['@chakra-ui/react', '@emotion/react', '@emotion/styled'],
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            return id.toString().split('node_modules/')[1].split('/')[0].toString();
-          }
-        }
-      }
+  },
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./client/src', import.meta.url)),
+      '@shared': fileURLToPath(new URL('./shared', import.meta.url)),
+      '@assets': fileURLToPath(new URL('./attached_assets', import.meta.url))
     }
   },
+  plugins: [
+    react()
+  ]
 });
