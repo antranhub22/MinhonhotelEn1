@@ -23,30 +23,12 @@ interface WebSocketClient extends WebSocket {
   isAlive?: boolean;
 }
 
-// Global reference to WebSocketServer for broadcasting
-let wssGlobal: WebSocketServer;
-
-/**
- * Broadcast a transcript message to all connected WebSocket clients for a given callId.
- */
-export function broadcastTranscript(content: string, callId: string) {
-  if (!wssGlobal) return;
-  const message = JSON.stringify({ type: 'transcript', content, callId, timestamp: new Date() });
-  wssGlobal.clients.forEach((client: WebSocket) => {
-    if ((client as any).callId === callId && client.readyState === WebSocket.OPEN) {
-      client.send(message);
-    }
-  });
-}
-
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create HTTP server for express app
   const httpServer = createServer(app);
   
   // Create WebSocket server
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
-  // Store globally for broadcast function
-  wssGlobal = wss;
   
   // Store active connections
   const clients = new Set<WebSocketClient>();
