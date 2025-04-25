@@ -138,7 +138,7 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
           {/* Duration display below conversation container */}
           <div className="mt-2 p-3 bg-white border-l-4 border-primary rounded shadow-lg">
             <p className="text-center text-primary font-semibold">Duration</p>
-            <p className="text-center text-2xl font-bold mt-1">{formatDuration(callDuration > 0 ? callDuration : localDuration)}</p>
+            <p className="text-center text-2xl font-bold mt-1">{formatDuration(localDuration)}</p>
           </div>
         </div>
         {/* Right: Control buttons */}
