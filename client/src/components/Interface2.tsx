@@ -135,6 +135,11 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
               </div>
             ))}
           </div>
+          {/* Duration display below conversation container */}
+          <div className="mt-2 p-3 bg-white border-l-4 border-primary rounded shadow-lg">
+            <p className="text-center text-primary font-semibold">Duration</p>
+            <p className="text-center text-2xl font-bold mt-1">{formatDuration(callDuration > 0 ? callDuration : localDuration)}</p>
+          </div>
         </div>
         {/* Right: Control buttons */}
         <div className="w-1/4 lg:w-1/3 flex flex-col items-center lg:items-end p-2 space-y-2 overflow-auto" style={{ maxHeight: '100%' }}>
@@ -150,11 +155,6 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
           <button id="endCallButton" onClick={endCall} className="w-full lg:w-auto flex items-center justify-center px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs">
             <span className="material-icons mr-1 text-base">call_end</span>End Call
           </button>
-          {/* Call duration display */}
-          <div className="w-full lg:w-auto flex flex-col items-center mt-2 p-2 bg-gray-100 rounded text-center text-xs">
-            <span className="font-semibold">Duration</span>
-            <span id="callDuration">{formatDuration(callDuration > 0 ? callDuration : localDuration)}</span>
-          </div>
         </div>
       </div>
     </div>
