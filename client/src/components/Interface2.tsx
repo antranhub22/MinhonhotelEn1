@@ -112,7 +112,7 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
     >
       <div className="container mx-auto flex flex-row p-2 h-full gap-2">
         {/* Left: Reference above Conversation */}
-        <div className="w-3/4 lg:w-2/3 flex flex-col overflow-auto space-y-2" style={{ maxHeight: '100%' }}>
+        <div className="w-3/4 lg:w-2/3 flex flex-col h-[80vh] overflow-auto space-y-2">
           <Reference references={references} />
           <div id="realTimeConversation" ref={conversationRef} className="relative flex-1 overflow-y-auto p-2 bg-white rounded-lg shadow-inner mb-[40px]">
             {[...transcripts].reverse().map((transcript) => (
