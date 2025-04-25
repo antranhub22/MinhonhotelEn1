@@ -79,7 +79,25 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
   const [vietnameseSummary, setVietnameseSummary] = useState<string | null>(null);
   const [emailSentForCurrentSession, setEmailSentForCurrentSession] = useState<boolean>(false);
   const [requestReceivedAt, setRequestReceivedAt] = useState<Date | null>(null);
-  const [activeOrders, setActiveOrders] = useState<ActiveOrder[]>([]);
+  const [activeOrders, setActiveOrders] = useState<ActiveOrder[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const stored = localStorage.getItem('activeOrders');
+      return stored ? JSON.parse(stored) as ActiveOrder[] : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Persist activeOrders to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem('activeOrders', JSON.stringify(activeOrders));
+    } catch {
+      console.error('Failed to persist activeOrders to localStorage');
+    }
+  }, [activeOrders]);
 
   const addActiveOrder = (order: ActiveOrder) => {
     setActiveOrders(prev => [...prev, order]);

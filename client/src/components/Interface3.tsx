@@ -20,7 +20,8 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
     callDetails,
     emailSentForCurrentSession,
     setEmailSentForCurrentSession,
-    addActiveOrder
+    addActiveOrder,
+    translateToVietnamese
   } = useAssistant();
   
   // Local state for grouping service requests by type
@@ -375,6 +376,13 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
       // Send email with the order summary
       try {
         console.log('Sending email with call summary and service requests...');
+        // Translate summary to Vietnamese for email
+        let summaryForEmail = callSummary?.content || '';
+        try {
+          summaryForEmail = await translateToVietnamese(summaryForEmail);
+        } catch (e) {
+          console.error('Failed to translate summary for email:', e);
+        }
         
         // Format call duration if available - ensure we have valid values even on mobile
         const formattedDuration = callDuration ? 
@@ -396,7 +404,7 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
           callDetails: {
             callId: currentCallId,
             roomNumber: orderSummary.roomNumber || 'unknown',
-            summary: callSummary?.content || 'No summary available',
+            summary: summaryForEmail || 'No summary available',
             timestamp: callSummary?.timestamp || new Date(),
             duration: formattedDuration,
             serviceRequests: orderSummary.items.map(item => item.name),
