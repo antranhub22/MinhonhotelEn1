@@ -11,16 +11,11 @@ import { sendServiceConfirmation, sendCallSummary } from "./gmail";
 import { sendMobileEmail, sendMobileCallSummary } from "./mobileMail";
 import axios from "axios";
 import { Reference, IReference } from './models/Reference';
-import { createClient } from 'redis';
 
 // Initialize OpenAI client 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
-
-// Initialize Redis client for caching call summaries
-const redisClient = createClient({ url: process.env.REDIS_URL });
-redisClient.connect().catch(err => console.error('Redis connection error', err));
 
 // Define WebSocket client interface
 interface WebSocketClient extends WebSocket {
@@ -330,13 +325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Store in database
       const result = await storage.addCallSummary(summaryData);
-      // Cache summary in Redis with 1-day TTL
-      try {
-        await redisClient.setEx(`summary:${callId}`, 86400, JSON.stringify(result));
-      } catch (cacheErr) {
-        console.error('Error caching summary in Redis:', cacheErr);
-      }
-      
+
       // Analyze the summary to extract structured service requests
       let serviceRequests: any[] = [];
       if (isAiGenerated && finalSummary) {
@@ -396,24 +385,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Call summary not found' });
       }
       
-      // Try to return cached summary
-      try {
-        const cached = await redisClient.get(`summary:${callId}`);
-        if (cached) {
-          return res.json(JSON.parse(cached));
-        }
-      } catch (cacheErr) {
-        console.error('Redis get error:', cacheErr);
-      }
       const summary = await storage.getCallSummaryByCallId(callId);
-      // Cache fetched summary
-      if (summary) {
-        try {
-          await redisClient.setEx(`summary:${callId}`, 86400, JSON.stringify(summary));
-        } catch (cacheErr) {
-          console.error('Error caching summary in Redis:', cacheErr);
-        }
-      }
       
       if (!summary) {
         return res.status(404).json({ error: 'Call summary not found' });

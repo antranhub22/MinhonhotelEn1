@@ -383,6 +383,8 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
         } catch (e) {
           console.error('Failed to translate summary for email:', e);
         }
+        // Log the translated summary so you can inspect its content
+        console.log('Translated summary for email (Vietnamese):', summaryForEmail);
         
         // Format call duration if available - ensure we have valid values even on mobile
         const formattedDuration = callDuration ? 
