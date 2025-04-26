@@ -1,4 +1,5 @@
 import React, { Suspense } from "react";
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { Switch, Route, Link } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import VoiceAssistant from "@/components/VoiceAssistant";
@@ -57,8 +58,10 @@ function App() {
   useWebSocket();
   return (
     <AssistantProvider>
-      <Router />
-      <Toaster />
+      <ErrorBoundary>
+        <Router />
+        <Toaster />
+      </ErrorBoundary>
     </AssistantProvider>
   );
 }
