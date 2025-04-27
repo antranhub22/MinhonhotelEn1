@@ -79,10 +79,16 @@ export default {
             height: "0",
           },
         },
+        siriOrb: {
+          '0%': { transform: 'scale(1) rotate(0deg)' },
+          '50%': { transform: 'scale(1.1) rotate(180deg)' },
+          '100%': { transform: 'scale(1) rotate(360deg)' },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        'siri-orb': 'siriOrb 3s ease-in-out infinite',
       },
     },
   },

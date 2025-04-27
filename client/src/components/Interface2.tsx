@@ -114,21 +114,19 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
       <div className="container mx-auto flex flex-row p-2 h-full gap-2">
         {/* Left: Call indicator & Realtime conversation side by side, Reference below */}
         <div className="w-3/4 lg:w-2/3 flex flex-col items-center space-y-4">
-          {/* Alexa-style light ring animation */}
+          {/* Siri orb style ring animation */}
           <div className="relative w-[240px] h-[240px] mb-4">
-            {/* Outer rotating ring */}
-            <div className="absolute inset-0 rounded-full border-4 border-blue-400 opacity-50 animate-spin"></div>
-            {/* Inner pulsing ring */}
-            <div className="absolute inset-4 rounded-full border-4 border-blue-300 opacity-75 animate-pulse"></div>
+            {/* Gradient border orb with siri-orb animation */}
+            <div className="absolute inset-0 rounded-full border-8 border-transparent border-t-blue-500 border-r-purple-500 border-b-pink-500 border-l-green-500 animate-siri-orb"></div>
             {/* Center button */}
             <button
               id="inCallButton"
               disabled
-              style={{ transform: `scale(${1 + micLevel * 0.2})` }}
-              className="relative w-full h-full bg-green-500 text-white rounded-full flex flex-col items-center justify-center text-sm"
+              style={{ transform: `scale(${1 + micLevel * 0.1})` }}
+              className="relative w-full h-full bg-[#ffffff20] text-white rounded-full flex flex-col items-center justify-center text-sm"
             >
               <span className="text-4xl mb-2">●</span>
-              <span>Call in progress...</span>
+              <span>Siri Listening...</span>
             </button>
           </div>
           {/* Realtime conversation container spans full width */}
@@ -148,18 +146,18 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
                     </span>
                   </div>
                   <div className="flex-grow">
-                    <p className="text-sm text-white mb-1">
+                    <p className="text-sm text-yellow-400 mb-1">
                       {transcript.role === 'assistant' ? 'Assistant' : 'You'}
                     </p>
-                    <p className="text-lg text-white">{transcript.content}</p>
+                    <p className="text-xl text-yellow-200 font-semibold">{transcript.content}</p>
                   </div>
                 </div>
               </div>
             ))}
             {/* Circular Duration widget at top-right */}
-            <div className="absolute top-[5px] right-[5px] flex flex-col items-center bg-white p-1">
-              <span className="text-xs text-primary font-semibold">Duration</span>
-              <span className="text-sm font-bold">{formatDuration(localDuration)}</span>
+            <div className="absolute top-[5px] right-[5px] flex flex-col items-center">
+              <span className="text-sm text-yellow-400 font-semibold">Duration</span>
+              <span className="text-lg text-yellow-200 font-bold">{formatDuration(localDuration)}</span>
             </div>
           </div>
           {/* Reference container below (full width, auto height) */}
