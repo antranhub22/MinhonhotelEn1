@@ -114,16 +114,23 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
       <div className="container mx-auto flex flex-row p-2 h-full gap-2">
         {/* Left: Call indicator & Realtime conversation side by side, Reference below */}
         <div className="w-3/4 lg:w-2/3 flex flex-col items-center space-y-4">
-          {/* Call indicator at top center */}
-          <button
-            id="inCallButton"
-            disabled
-            style={{ transform: `scale(${1 + micLevel * 0.5})` }}
-            className="w-[240px] h-[240px] mb-4 bg-green-500 text-white rounded-full flex flex-col items-center justify-center text-sm"
-          >
-            <span className="text-4xl mb-2">●</span>
-            <span>Call in progress...</span>
-          </button>
+          {/* Alexa-style light ring animation */}
+          <div className="relative w-[240px] h-[240px] mb-4">
+            {/* Outer rotating ring */}
+            <div className="absolute inset-0 rounded-full border-4 border-blue-400 opacity-50 animate-spin"></div>
+            {/* Inner pulsing ring */}
+            <div className="absolute inset-4 rounded-full border-4 border-blue-300 opacity-75 animate-pulse"></div>
+            {/* Center button */}
+            <button
+              id="inCallButton"
+              disabled
+              style={{ transform: `scale(${1 + micLevel * 0.2})` }}
+              className="relative w-full h-full bg-green-500 text-white rounded-full flex flex-col items-center justify-center text-sm"
+            >
+              <span className="text-4xl mb-2">●</span>
+              <span>Call in progress...</span>
+            </button>
+          </div>
           {/* Realtime conversation container spans full width */}
           <div
             id="realTimeConversation"
