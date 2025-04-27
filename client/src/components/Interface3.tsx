@@ -557,31 +557,45 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
           <div id="summaryContainer" className="mb-6">
             {/* Service requests processed - hidden but functional */}
             
-            {/* Room Information Section */}
-            <div className="mb-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="col-span-1">
-                  <p className="text-sm text-gray-500 mb-1">Room Number</p>
-                  <input 
-                    type="text" 
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-primary"
-                    value={orderSummary.roomNumber}
-                    onChange={(e) => handleInputChange('roomNumber', e.target.value)}
-                  />
-                </div>
-                <div className="col-span-1">
-                  <p className="text-sm text-gray-500 mb-1">Service Timing Requested</p>
-                  <input
-                    type="text"
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-primary"
-                    value={orderSummary.deliveryTime}
-                    onChange={(e) => handleInputChange('deliveryTime', e.target.value)}
-                    placeholder="Nhập thời gian yêu cầu hoặc mặc định từ cuộc gọi"
-                  />
-                </div>
+            {/* Room Information and Controls */}
+            <div className="mb-6 flex items-start space-x-4">
+              <div className="w-1/5">
+                <p className="text-sm text-gray-500 mb-1">Room Number</p>
+                <input
+                  type="text"
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-primary"
+                  value={orderSummary.roomNumber}
+                  onChange={(e) => handleInputChange('roomNumber', e.target.value)}
+                />
               </div>
-              
-
+              {/* Control Buttons */}
+              <div className="flex flex-wrap gap-2">
+                <button 
+                  className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium flex items-center"
+                  onClick={() => setCurrentInterface('interface2')}
+                >
+                  <span className="material-icons text-sm align-middle mr-1">arrow_back</span>Back
+                </button>
+                <button
+                  className="px-3 py-2 bg-red-500 text-white rounded-lg text-sm font-medium flex items-center"
+                  onClick={() => setCurrentInterface('interface1')}
+                >
+                  <span className="material-icons text-sm align-middle mr-1">cancel</span>Cancel
+                </button>
+                <button 
+                  className="px-3 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium flex items-center"
+                  onClick={() => setCurrentInterface('interface3vi')}
+                >
+                  <span className="material-icons text-sm align-middle mr-1">translate</span>Vietnamese
+                </button>
+                <button 
+                  id="confirmOrderButton" 
+                  className="px-3 py-2 bg-green-500 text-white rounded-lg text-sm font-medium flex items-center"
+                  onClick={handleConfirmOrder}
+                >
+                  <span className="material-icons text-sm align-middle mr-1">check_circle</span>Confirm
+                </button>
+              </div>
             </div>
             
             {/* Request placeholder - hidden but data still processed */}
@@ -606,39 +620,6 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
             <div className="hidden">
               {orderSummary.totalAmount.toFixed(2)}
             </div>
-          </div>
-          
-          {/* Action Buttons - Responsive design for mobile */}
-          <div className="flex flex-wrap justify-center gap-2 mt-6">
-            <button 
-              className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium flex items-center"
-              onClick={() => setCurrentInterface('interface2')}
-            >
-              <span className="material-icons text-sm align-middle mr-1">arrow_back</span>
-              Back
-            </button>
-            <button
-              className="px-3 py-2 bg-red-500 text-white rounded-lg text-sm font-medium flex items-center"
-              onClick={() => setCurrentInterface('interface1')}
-            >
-              <span className="material-icons text-sm align-middle mr-1">cancel</span>
-              Cancel
-            </button>
-            <button 
-              className="px-3 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium flex items-center"
-              onClick={() => setCurrentInterface('interface3vi')}
-            >
-              <span className="material-icons text-sm align-middle mr-1">translate</span>
-              Vietnamese
-            </button>
-            <button 
-              id="confirmOrderButton" 
-              className="px-3 py-2 bg-green-500 text-white rounded-lg text-sm font-medium flex items-center"
-              onClick={handleConfirmOrder}
-            >
-              <span className="material-icons text-sm align-middle mr-1">check_circle</span>
-              Confirm
-            </button>
           </div>
         </div>
       </div>
