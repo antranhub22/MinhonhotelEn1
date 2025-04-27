@@ -111,53 +111,50 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
       }}
     >
       <div className="container mx-auto flex flex-row p-2 h-full gap-2">
-        {/* Left: Reference above Conversation */}
-        <div className="w-3/4 lg:w-2/3 flex flex-col h-[80vh] overflow-auto space-y-2">
-          <Reference references={references} />
-          {/* Hiển thị trạng thái cuộc gọi đang diễn ra */}
-          <button
-            id="inCallButton"
-            disabled
-            className="w-[240px] h-[240px] mb-4 bg-green-500 text-white rounded-full flex flex-col items-center justify-center text-sm animate-pulse"
-          >
-            <span className="animate-pulse text-4xl mb-2">●</span>
-            <span>Call in progress...</span>
-          </button>
-          <div
-            id="realTimeConversation"
-            ref={conversationRef}
-            className="relative p-2 bg-white rounded-lg shadow-inner mb-[40px] max-h-20 overflow-hidden"
-            style={{
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical'
-            }}
-          >
-            {[...transcripts].reverse().map((transcript) => (
-              <div key={transcript.id} className="mb-2">
-                <div className="flex items-start mb-1">
-                  <div className={`w-8 h-8 rounded-full ${
-                    transcript.role === 'assistant' ? 'bg-primary text-white' : 'bg-amber-400 text-primary-dark'
-                  } flex items-center justify-center mr-2 flex-shrink-0`}>
-                    <span className="material-icons text-sm">
-                      {transcript.role === 'assistant' ? 'support_agent' : 'person'}
-                    </span>
-                  </div>
-                  <div className="flex-grow">
-                    <p className="text-sm text-gray-500 mb-1">
-                      {transcript.role === 'assistant' ? 'Assistant' : 'You'}
-                    </p>
-                    <p className="text-gray-800">{transcript.content}</p>
+        {/* Left: Call indicator & Realtime conversation side by side, Reference below */}
+        <div className="w-3/4 lg:w-2/3 flex flex-col space-y-4">
+          <div className="flex flex-row items-start space-x-4">
+            <button
+              id="inCallButton"
+              disabled
+              className="w-[240px] h-[240px] bg-green-500 text-white rounded-full flex flex-col items-center justify-center text-sm animate-pulse"
+            >
+              <span className="animate-pulse text-4xl mb-2">●</span>
+              <span>Call in progress...</span>
+            </button>
+            <div
+              id="realTimeConversation"
+              ref={conversationRef}
+              className="relative p-2 bg-white rounded-lg shadow-inner flex-1 max-h-20 overflow-hidden"
+              style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}
+            >
+              {[...transcripts].reverse().map((transcript) => (
+                <div key={transcript.id} className="mb-2">
+                  <div className="flex items-start mb-1">
+                    <div className={`w-8 h-8 rounded-full ${
+                      transcript.role === 'assistant' ? 'bg-primary text-white' : 'bg-amber-400 text-primary-dark'
+                    } flex items-center justify-center mr-2 flex-shrink-0`}>
+                      <span className="material-icons text-sm">
+                        {transcript.role === 'assistant' ? 'support_agent' : 'person'}
+                      </span>
+                    </div>
+                    <div className="flex-grow">
+                      <p className="text-sm text-gray-500 mb-1">
+                        {transcript.role === 'assistant' ? 'Assistant' : 'You'}
+                      </p>
+                      <p className="text-gray-800">{transcript.content}</p>
+                    </div>
                   </div>
                 </div>
+              ))}
+              <div className="absolute top-[5px] right-[5px] w-16 h-16 lg:w-20 lg:h-20 flex flex-col justify-center items-center bg-white border-4 border-primary rounded-full shadow-lg">
+                <span className="text-xs text-primary font-semibold">Duration</span>
+                <span className="text-sm lg:text-base font-bold">{formatDuration(localDuration)}</span>
               </div>
-            ))}
-            {/* Circular Duration widget now at top-right */}
-            <div className="absolute top-[5px] right-[5px] w-16 h-16 lg:w-20 lg:h-20 flex flex-col justify-center items-center bg-white border-4 border-primary rounded-full shadow-lg">
-              <span className="text-xs text-primary font-semibold">Duration</span>
-              <span className="text-sm lg:text-base font-bold">{formatDuration(localDuration)}</span>
             </div>
           </div>
+          {/* Container Reference below */}
+          <Reference references={references} />
         </div>
         {/* Right: Control buttons */}
         <div className="w-1/4 lg:w-1/3 flex flex-col items-center lg:items-end p-2 space-y-2 overflow-auto" style={{ maxHeight: '100%' }}>
