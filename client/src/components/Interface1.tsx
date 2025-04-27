@@ -28,7 +28,7 @@ const Interface1: React.FC<Interface1Props> = ({ isActive }) => {
         backgroundPosition: 'center'
       }}
     >
-      <div className="container mx-auto h-full flex flex-col items-center justify-start text-white p-5 pt-10 md:pt-16 overflow-y-auto">
+      <div className="container mx-auto h-full flex flex-col items-center justify-start text-white p-5 pt-10 lg:pt-16 overflow-y-auto">
         {/* Active orders status panels (up to 60 min countdown) */}
         {activeOrders.map((o) => {
           const deadline = new Date(o.requestedAt.getTime() + 60 * 60 * 1000);
@@ -45,8 +45,8 @@ const Interface1: React.FC<Interface1Props> = ({ isActive }) => {
             </div>
           );
         })}
-        <h2 className="font-poppins font-bold text-3xl md:text-4xl text-amber-400 mb-2 text-center">Mi Nhon Hotel Mui Ne</h2>
-        <p className="text-lg md:text-xl text-center max-w-lg mb-8">AI-powered Voice Assistant - Supporting All Your Needs</p>
+        <h2 className="font-poppins font-bold text-3xl lg:text-4xl text-amber-400 mb-2 text-center">Mi Nhon Hotel Mui Ne</h2>
+        <p className="text-lg lg:text-xl text-center max-w-lg mb-8">AI-powered Voice Assistant - Supporting All Your Needs</p>
         
         {/* Main Call Button */}
         <div className="relative mb-12">
@@ -57,11 +57,11 @@ const Interface1: React.FC<Interface1Props> = ({ isActive }) => {
           {/* Main Button */}
           <button 
             id="vapiButton" 
-            className="relative w-28 h-28 md:w-36 md:h-36 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-primary-dark font-poppins font-bold flex flex-col items-center justify-center shadow-lg transition-transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-amber-300" 
+            className="relative w-28 h-28 lg:w-36 lg:h-36 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-primary-dark font-poppins font-bold flex flex-col items-center justify-center shadow-lg transition-transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-amber-300" 
             onClick={startCall}
           >
-            <span className="material-icons text-4xl md:text-5xl mb-1">mic</span>
-            <span className="text-sm md:text-base font-medium">Press to Call</span>
+            <span className="material-icons text-4xl lg:text-5xl mb-1">mic</span>
+            <span className="text-sm lg:text-base font-medium">Press to Call</span>
           </button>
         </div>
         {/* Services Section */}
