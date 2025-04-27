@@ -536,16 +536,16 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
           </div>
           
           {/* Additional Notes with actions */}
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex items-center justify-between h-10">
             <button
-              className="px-3 py-1 bg-blue-500 text-white rounded-lg text-sm font-medium"
+              className="h-full px-3 bg-blue-500 text-white rounded-lg text-sm font-medium"
               onClick={handleAddNote}
               disabled={!note.trim()}
             >
               Add Note
             </button>
             <button
-              className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium"
+              className="h-full px-3 bg-blue-50 text-primary rounded-lg text-sm font-medium"
               onClick={() => setCurrentInterface('interface3vi')}
             >
               Vietnamese
