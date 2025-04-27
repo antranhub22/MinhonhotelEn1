@@ -535,65 +535,64 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
             )}
           </div>
           
-          {/* Additional Notes Container */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
-            <textarea
-              placeholder="Enter any corrections or additional Information & Press Add Note to update into the Conversation Summary"
-              className="w-full p-2 border rounded-lg mb-4"  
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
+          {/* Additional Notes with actions */}
+          <div className="mb-4 flex items-center justify-between">
             <button
-              className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-lg text-sm font-medium"
+              className="px-3 py-1 bg-blue-500 text-white rounded-lg text-sm font-medium"
               onClick={handleAddNote}
               disabled={!note.trim()}
             >
               Add Note
             </button>
+            <button
+              className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium"
+              onClick={() => setCurrentInterface('interface3vi')}
+            >
+              Vietnamese
+            </button>
           </div>
+          <textarea
+            placeholder="Enter any corrections or additional Information & Press Add Note to update into the Conversation Summary"
+            className="w-full p-2 border rounded-lg mb-4"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            rows={3}
+          />
           
           {/* Service Requests Container */}
           <div id="summaryContainer" className="mb-6">
             {/* Service requests processed - hidden but functional */}
             
-            {/* Room Information and Controls */}
-            <div className="mb-6 flex items-start space-x-4">
-              <div className="w-1/5">
-                <p className="text-sm text-gray-500 mb-1">Room Number</p>
+            {/* Room Number and action buttons inline */}
+            <div className="mb-6 flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <label className="text-sm text-gray-500">Room Number</label>
                 <input
                   type="text"
-                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-32 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-primary"
                   value={orderSummary.roomNumber}
                   onChange={(e) => handleInputChange('roomNumber', e.target.value)}
                 />
               </div>
-              {/* Control Buttons */}
-              <div className="flex flex-wrap gap-2">
-                <button 
+              <div className="flex items-center space-x-2">
+                <button
                   className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium flex items-center"
                   onClick={() => setCurrentInterface('interface2')}
                 >
-                  <span className="material-icons text-sm align-middle mr-1">arrow_back</span>Back
+                  <span className="material-icons text-sm mr-1">arrow_back</span>Back
                 </button>
                 <button
                   className="px-3 py-2 bg-red-500 text-white rounded-lg text-sm font-medium flex items-center"
                   onClick={() => setCurrentInterface('interface1')}
                 >
-                  <span className="material-icons text-sm align-middle mr-1">cancel</span>Cancel
+                  <span className="material-icons text-sm mr-1">cancel</span>Cancel
                 </button>
-                <button 
-                  className="px-3 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium flex items-center"
-                  onClick={() => setCurrentInterface('interface3vi')}
-                >
-                  <span className="material-icons text-sm align-middle mr-1">translate</span>Vietnamese
-                </button>
-                <button 
-                  id="confirmOrderButton" 
+                <button
+                  id="confirmOrderButton"
                   className="px-3 py-2 bg-green-500 text-white rounded-lg text-sm font-medium flex items-center"
                   onClick={handleConfirmOrder}
                 >
-                  <span className="material-icons text-sm align-middle mr-1">check_circle</span>Confirm
+                  <span className="material-icons text-sm mr-1">check_circle</span>Confirm
                 </button>
               </div>
             </div>
