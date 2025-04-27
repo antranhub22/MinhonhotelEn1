@@ -146,16 +146,16 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
                     </span>
                   </div>
                   <div className="flex-grow">
-                    <p className="text-sm text-yellow-400 mb-1">
+                    <p className={`text-sm mb-1 ${transcript.role === 'assistant' ? 'text-yellow-400' : 'text-blue-400'}`}>
                       {transcript.role === 'assistant' ? 'Assistant' : 'You'}
                     </p>
-                    <p className="text-xl text-yellow-200 font-semibold">{transcript.content}</p>
+                    <p className={`text-xl font-semibold ${transcript.role === 'assistant' ? 'text-yellow-200' : 'text-blue-200'}`}>{transcript.content}</p>
                   </div>
                 </div>
               </div>
             ))}
             {/* Circular Duration widget at top-right */}
-            <div className="absolute top-[5px] right-[5px] flex flex-col items-center">
+            <div className="absolute top-[-15px] right-[5px] flex flex-col items-center">
               <span className="text-sm text-yellow-400 font-semibold">Duration</span>
               <span className="text-lg text-yellow-200 font-bold">{formatDuration(localDuration)}</span>
             </div>
