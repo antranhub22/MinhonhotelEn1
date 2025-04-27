@@ -114,7 +114,16 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
         {/* Left: Reference above Conversation */}
         <div className="w-3/4 lg:w-2/3 flex flex-col h-[80vh] overflow-auto space-y-2">
           <Reference references={references} />
-          <div id="realTimeConversation" ref={conversationRef} className="relative flex-1 overflow-y-auto p-2 bg-white rounded-lg shadow-inner mb-[40px]">
+          {/* Hiển thị trạng thái cuộc gọi đang diễn ra */}
+          <button
+            id="inCallButton"
+            disabled
+            className="w-full mb-2 px-3 py-1 bg-green-500 text-white rounded-lg text-sm flex items-center justify-center"
+          >
+            <span className="animate-pulse mr-2">●</span>
+            Call in progress...
+          </button>
+          <div id="realTimeConversation" ref={conversationRef} className="relative p-2 bg-white rounded-lg shadow-inner mb-[40px] h-8 truncate">
             {[...transcripts].reverse().map((transcript) => (
               <div key={transcript.id} className="mb-2">
                 <div className="flex items-start mb-1">
