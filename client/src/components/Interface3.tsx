@@ -538,7 +538,7 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
               </div>
               {/* Additional Notes and Actions */}
               <div className="flex items-center justify-between h-10">
-                <button className="h-full px-3 bg-white text-blue-500 border border-blue-500 rounded-lg text-sm font-medium" onClick={handleAddNote} disabled={!note.trim()}>Add Note</button>
+                <button className="h-full px-3 bg-blue-500 text-white rounded-lg text-sm font-medium" onClick={handleAddNote} disabled={!note.trim()}>Add Note</button>
                 <button className="h-full px-3 bg-blue-50 text-primary rounded-lg text-sm font-medium" onClick={() => setCurrentInterface('interface3vi')}>Vietnamese</button>
               </div>
               <textarea placeholder="Enter any corrections or additional Information & Press Add Note to update into the Conversation Summary" className="w-full p-2 border rounded-lg mb-4 text-sm md:text-base" value={note} onChange={(e) => setNote(e.target.value)} rows={3} />
@@ -551,9 +551,15 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
             {/* Right column: control buttons at top-right */}
             <div className="w-1/4 flex justify-end">
               <div className="flex flex-col items-end space-y-2">
-                <button className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium flex items-center" onClick={() => setCurrentInterface('interface2')}><span className="material-icons text-sm mr-1">arrow_back</span>Back</button>
-                <button className="px-3 py-2 bg-red-500 text-white rounded-lg text-sm font-medium flex items-center" onClick={() => setCurrentInterface('interface1')}><span className="material-icons text-sm mr-1">cancel</span>Cancel</button>
-                <button id="confirmOrderButton" className="px-3 py-2 bg-green-500 text-white rounded-lg text-sm font-medium flex items-center" onClick={handleConfirmOrder}><span className="material-icons text-sm mr-1">check_circle</span>Confirm</button>
+                <button className="w-full lg:w-auto flex items-center justify-center px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-lg text-xs" onClick={() => setCurrentInterface('interface2')}>
+                  <span className="material-icons text-sm mr-1">arrow_back</span>Back
+                </button>
+                <button className="w-full lg:w-auto flex items-center justify-center px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-lg text-xs" onClick={() => setCurrentInterface('interface1')}>
+                  <span className="material-icons text-sm mr-1">cancel</span>Cancel
+                </button>
+                <button id="confirmOrderButton" className="w-full lg:w-auto flex items-center justify-center px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs" onClick={handleConfirmOrder}>
+                  <span className="material-icons text-sm mr-1">check_circle</span>Confirm
+                </button>
               </div>
             </div>
           </div>
