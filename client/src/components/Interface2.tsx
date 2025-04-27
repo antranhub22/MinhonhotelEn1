@@ -128,8 +128,7 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
           <div
             id="realTimeConversation"
             ref={conversationRef}
-            className="relative p-2 bg-white rounded-lg shadow-inner w-full h-[86px] overflow-hidden"
-            style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+            className="relative p-2 bg-white rounded-lg shadow-inner w-full min-h-[60px] max-h-[128px] overflow-y-auto"
           >
             {[...transcripts].reverse().map((transcript) => (
               <div key={transcript.id} className="mb-2">
@@ -151,7 +150,7 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
               </div>
             ))}
             {/* Circular Duration widget at top-right */}
-            <div className="absolute top-[5px] right-[5px] w-[42px] h-[42px] flex flex-col justify-center items-center bg-white border-2 border-primary rounded-full shadow-lg">
+            <div className="absolute top-[5px] right-[5px] flex flex-col items-center bg-white p-1">
               <span className="text-xs text-primary font-semibold">Duration</span>
               <span className="text-sm font-bold">{formatDuration(localDuration)}</span>
             </div>
