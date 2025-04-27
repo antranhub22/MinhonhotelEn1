@@ -11,6 +11,8 @@ import { sendServiceConfirmation, sendCallSummary } from "./gmail";
 import { sendMobileEmail, sendMobileCallSummary } from "./mobileMail";
 import axios from "axios";
 import { Reference, IReference } from './models/Reference';
+import express, { type Request, Response } from 'express';
+import { verifyJWT } from './middleware/auth';
 
 // Initialize OpenAI client 
 const openai = new OpenAI({
@@ -206,23 +208,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Update order status
-  app.patch('/api/orders/:id/status', async (req, res) => {
+  app.patch('/api/orders/:id/status', verifyJWT, async (req: Request, res: Response) => {
+    // Parse order ID to number
+    const idNum = parseInt(req.params.id, 10);
+    const { status } = req.body;
+    
+    if (!status || typeof status !== 'string') {
+      return res.status(400).json({ error: 'Status is required' });
+    }
+    
+    const updatedOrder = await storage.updateOrderStatus(idNum, status);
+    
+    if (!updatedOrder) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    
+    res.json(updatedOrder);
+  });
+  
+  // Staff: get all orders, optionally filter by status, room, time
+  app.get('/api/staff/orders', verifyJWT, async (req: Request, res: Response) => {
     try {
-      const id = parseInt(req.params.id);
-      const { status } = req.body;
-      
-      if (!status || typeof status !== 'string') {
-        return res.status(400).json({ error: 'Status is required' });
-      }
-      
-      const updatedOrder = await storage.updateOrderStatus(id, status);
-      
-      if (!updatedOrder) {
-        return res.status(404).json({ error: 'Order not found' });
-      }
-      
+      const { status, roomNumber } = req.query;
+      const orders = await storage.getAllOrders({
+        status: status as string,
+        roomNumber: roomNumber as string
+      });
+      res.json(orders);
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to retrieve staff orders' });
+    }
+  });
+  
+  // Endpoint to update status via POST
+  app.post('/api/orders/:id/update-status', verifyJWT, async (req: Request, res: Response) => {
+    // Parse order ID to number
+    const idNum = parseInt(req.params.id, 10);
+    const { status } = req.body;
+    try {
+      const updatedOrder = await storage.updateOrderStatus(idNum, status);
+      // Emit WebSocket notification
+      const io = req.app.get('io');
+      io.to(String(idNum)).emit('order_status_update', { orderId: String(idNum), status });
       res.json(updatedOrder);
-    } catch (error) {
+    } catch (err) {
       res.status(500).json({ error: 'Failed to update order status' });
     }
   });
