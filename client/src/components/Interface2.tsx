@@ -15,7 +15,8 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
     endCall: contextEndCall,
     isMuted,
     toggleMute,
-    setCurrentInterface
+    setCurrentInterface,
+    micLevel
   } = useAssistant();
   
   // Add state for references
@@ -117,9 +118,10 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
           <button
             id="inCallButton"
             disabled
-            className="w-[240px] h-[240px] bg-green-500 text-white rounded-full flex flex-col items-center justify-center text-sm animate-pulse"
+            style={{ transform: `scale(${1 + micLevel * 0.5})` }}
+            className="w-[240px] h-[240px] mb-4 bg-green-500 text-white rounded-full flex flex-col items-center justify-center text-sm"
           >
-            <span className="animate-pulse text-4xl mb-2">●</span>
+            <span className="text-4xl mb-2">●</span>
             <span>Call in progress...</span>
           </button>
           {/* Realtime conversation container spans full width */}

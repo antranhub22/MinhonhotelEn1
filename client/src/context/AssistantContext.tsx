@@ -33,6 +33,7 @@ interface AssistantContextType {
   setRequestReceivedAt: (date: Date | null) => void;
   activeOrders: ActiveOrder[];
   addActiveOrder: (order: ActiveOrder) => void;
+  micLevel: number;
 }
 
 const initialOrderSummary: OrderSummary = {
@@ -95,6 +96,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       return [];
     }
   });
+  const [micLevel, setMicLevel] = useState<number>(0);
 
   // Persist activeOrders to localStorage whenever it changes
   useEffect(() => {
@@ -127,6 +129,10 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     
     // Set up message listener to handle transcripts and end of call reports
     if (vapi) {
+      // Listen to volume-level events to update micLevel
+      vapi.on('volume-level', (level: number) => {
+        setMicLevel(level);
+      });
       // Message handler for transcripts and reports
       const handleMessage = async (message: any) => {
         console.log('Message received:', message);
@@ -539,6 +545,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     setRequestReceivedAt,
     activeOrders,
     addActiveOrder,
+    micLevel,
   };
 
   return (
