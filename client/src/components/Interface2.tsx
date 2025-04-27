@@ -112,7 +112,7 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
     >
       <div className="container mx-auto flex flex-row p-2 h-full gap-2">
         {/* Left: Reference above Conversation */}
-        <div className="w-full md:w-3/4 lg:w-2/3 flex flex-col h-[80vh] overflow-auto space-y-2">
+        <div className="w-3/4 lg:w-2/3 flex flex-col h-[80vh] overflow-auto space-y-2">
           <Reference references={references} />
           <div id="realTimeConversation" ref={conversationRef} className="relative flex-1 overflow-y-auto p-2 bg-white rounded-lg shadow-inner mb-[40px]">
             {[...transcripts].reverse().map((transcript) => (
@@ -142,7 +142,7 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
           </div>
         </div>
         {/* Right: Control buttons */}
-        <div className="w-full md:w-1/4 lg:w-1/3 flex flex-col items-center lg:items-end p-2 space-y-2 overflow-auto" style={{ maxHeight: '100%' }}>
+        <div className="w-1/4 lg:w-1/3 flex flex-col items-center lg:items-end p-2 space-y-2 overflow-auto" style={{ maxHeight: '100%' }}>
           <button id="backButton" onClick={() => setCurrentInterface('interface1')} className="w-full lg:w-auto flex items-center justify-center px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-lg text-xs">
             <span className="material-icons mr-1 text-base">arrow_back</span>Back
           </button>
