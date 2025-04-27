@@ -115,7 +115,7 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
         {/* Left: Call indicator & Realtime conversation side by side, Reference below */}
         <div className="w-3/4 lg:w-2/3 flex flex-col items-center space-y-4">
           {/* Siri orb style ring animation */}
-          <div className="relative w-[240px] h-[240px] mb-4">
+          <div className="relative w-[240px] h-[240px] mt-[10px] mb-4">
             {/* Gradient border orb with siri-orb animation */}
             <div className="absolute inset-0 rounded-full border-8 border-transparent border-t-blue-500 border-r-purple-500 border-b-pink-500 border-l-green-500 animate-siri-orb"></div>
             {/* Center button */}
@@ -126,7 +126,7 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
               className="relative w-full h-full bg-[#ffffff20] text-white rounded-full flex flex-col items-center justify-center text-sm"
             >
               <span className="text-4xl mb-2">●</span>
-              <span>Siri Listening...</span>
+              <span>Listening...</span>
             </button>
           </div>
           {/* Realtime conversation container spans full width */}
