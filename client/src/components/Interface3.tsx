@@ -541,7 +541,7 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
                 <button className="h-full px-3 bg-blue-500 text-white rounded-lg text-sm font-medium" onClick={handleAddNote} disabled={!note.trim()}>Add Note</button>
                 <button className="h-full px-3 bg-blue-50 text-primary rounded-lg text-sm font-medium" onClick={() => setCurrentInterface('interface3vi')}>Vietnamese</button>
               </div>
-              <textarea placeholder="Enter any corrections or additional Information & Press Add Note to update into the Conversation Summary" className="w-full p-2 border rounded-lg mb-4" value={note} onChange={(e) => setNote(e.target.value)} rows={3} />
+              <textarea placeholder="Enter any corrections or additional Information & Press Add Note to update into the Conversation Summary" className="w-full p-2 border rounded-lg mb-4 text-sm md:text-base" value={note} onChange={(e) => setNote(e.target.value)} rows={3} />
               {/* Room Number input */}
               <div className="flex items-center space-x-2">
                 <label className="text-sm text-gray-500">Room Number</label>
