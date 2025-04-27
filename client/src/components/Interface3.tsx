@@ -498,9 +498,9 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
           <div className="mb-4 pb-3 border-b border-gray-200">
             <p className="font-poppins font-bold text-lg text-primary">REVIEW & CONFIRM</p>
           </div>
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-row gap-4">
             {/* Left column: summary, notes, room number */}
-            <div className="w-full md:w-3/4 space-y-4">
+            <div className="w-3/4 space-y-4">
               {/* AI-generated Call Summary Container */}
               <div id="summary-container" className="mb-4">
                 {callSummary ? (
@@ -549,7 +549,7 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
               </div>
             </div>
             {/* Right column: control buttons at top-right */}
-            <div className="w-full md:w-1/4 flex md:justify-end">
+            <div className="w-1/4 flex justify-end">
               <div className="flex flex-col items-end space-y-2">
                 <button className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium flex items-center" onClick={() => setCurrentInterface('interface2')}><span className="material-icons text-sm mr-1">arrow_back</span>Back</button>
                 <button className="px-3 py-2 bg-red-500 text-white rounded-lg text-sm font-medium flex items-center" onClick={() => setCurrentInterface('interface1')}><span className="material-icons text-sm mr-1">cancel</span>Cancel</button>
