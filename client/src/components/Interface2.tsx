@@ -126,7 +126,7 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
           <div
             id="realTimeConversation"
             ref={conversationRef}
-            className="relative p-2 bg-white rounded-lg shadow-inner w-full max-h-16 overflow-hidden"
+            className="relative p-2 bg-white rounded-lg shadow-inner w-full h-16 overflow-hidden"
             style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
           >
             {[...transcripts].reverse().map((transcript) => (
@@ -149,13 +149,15 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
               </div>
             ))}
             {/* Circular Duration widget at top-right */}
-            <div className="absolute top-[5px] right-[5px] w-12 h-12 flex flex-col justify-center items-center bg-white border-2 border-primary rounded-full shadow-lg">
+            <div className="absolute top-[5px] right-[5px] w-[28px] h-[28px] flex flex-col justify-center items-center bg-white border-2 border-primary rounded-full shadow-lg">
               <span className="text-xs text-primary font-semibold">Duration</span>
               <span className="text-sm font-bold">{formatDuration(localDuration)}</span>
             </div>
           </div>
-          {/* Reference container below */}
-          <Reference references={references} />
+          {/* Reference container below (full width, auto height) */}
+          <div className="w-full">
+            <Reference references={references} />
+          </div>
         </div>
         {/* Right: Control buttons */}
         <div className="w-1/4 lg:w-1/3 flex flex-col items-center lg:items-end p-2 space-y-2 overflow-auto" style={{ maxHeight: '100%' }}>
