@@ -130,7 +130,7 @@ const Reference: React.FC<ReferenceProps> = ({ references }) => {
 
   return (
     <div className="w-4/5 mx-auto rounded-lg border border-gray-200 p-5">
-      <h3 className="font-poppins font-semibold text-xl text-primary mb-4">References</h3>
+      <h3 className="font-poppins font-semibold text-xl text-white mb-4">References</h3>
       <div className="grid grid-cols-3 gap-4">
         {references.map((reference, index) => (
           <div key={`${reference.url}-${index}`} className="border rounded-lg p-2">
