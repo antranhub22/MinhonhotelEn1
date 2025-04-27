@@ -128,9 +128,8 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
               <span className="text-4xl mb-2">●</span>
               <span>Listening...</span>
             </button>
-            {/* Duration display at bottom-right of call indicator */}
-            <div className="absolute bottom-2 right-2 flex flex-col items-center text-white">
-              <span className="text-sm font-semibold">Duration</span>
+            {/* Time display centered at bottom of call indicator */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white">
               <span className="text-lg font-bold">{formatDuration(localDuration)}</span>
             </div>
           </div>
