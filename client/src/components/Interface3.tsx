@@ -498,126 +498,63 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
           <div className="mb-4 pb-3 border-b border-gray-200">
             <p className="font-poppins font-bold text-lg text-primary">REVIEW & CONFIRM</p>
           </div>
-          
-          {/* AI-generated Call Summary Container */}
-          <div id="summary-container" className="mb-4">
-            {callSummary ? (
-              <div className="p-4 bg-blue-50 rounded-lg shadow-sm mb-4 relative">
-                <div className="absolute top-2 right-2 bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                  </svg>
-                  <span>AI Generated</span>
-                </div>
-                <h3 className="font-medium text-lg mb-2 text-blue-800">Conversation Summary</h3>
-                <p className="text-gray-700 whitespace-pre-line">{callSummary.content}</p>
-                
-                <div className="mt-3 flex justify-end">
-                  <div className="text-xs text-gray-500">
-                    Generated at {new Date(callSummary.timestamp).toLocaleTimeString()}
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Left column: summary, notes, room number */}
+            <div className="w-full md:w-3/4 space-y-4">
+              {/* AI-generated Call Summary Container */}
+              <div id="summary-container" className="mb-4">
+                {callSummary ? (
+                  <div className="p-4 bg-blue-50 rounded-lg shadow-sm mb-4 relative">
+                    <div className="absolute top-2 right-2 bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                      </svg>
+                      <span>AI Generated</span>
+                    </div>
+                    <h3 className="font-medium text-lg mb-2 text-blue-800">Conversation Summary</h3>
+                    <p className="text-gray-700 whitespace-pre-line">{callSummary.content}</p>
+                    
+                    <div className="mt-3 flex justify-end">
+                      <div className="text-xs text-gray-500">
+                        Generated at {new Date(callSummary.timestamp).toLocaleTimeString()}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="p-4 bg-gray-50 rounded-lg shadow-sm mb-4 border border-dashed border-gray-300">
+                    <div className="animate-pulse flex space-x-2 items-center">
+                      <div className="h-4 w-4 bg-gray-300 rounded-full"></div>
+                      <div className="h-4 bg-gray-300 rounded w-1/4"></div>
+                    </div>
+                    <h3 className="font-medium text-lg my-2 text-gray-600">Generating Summary...</h3>
+                    <div className="space-y-2">
+                      <div className="h-2 bg-gray-200 rounded w-3/4"></div>
+                      <div className="h-2 bg-gray-200 rounded w-full"></div>
+                      <div className="h-2 bg-gray-200 rounded w-5/6"></div>
+                    </div>
+                    <p className="text-gray-400 italic mt-3">Our AI is analyzing your conversation and preparing a summary...</p>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="p-4 bg-gray-50 rounded-lg shadow-sm mb-4 border border-dashed border-gray-300">
-                <div className="animate-pulse flex space-x-2 items-center">
-                  <div className="h-4 w-4 bg-gray-300 rounded-full"></div>
-                  <div className="h-4 bg-gray-300 rounded w-1/4"></div>
-                </div>
-                <h3 className="font-medium text-lg my-2 text-gray-600">Generating Summary...</h3>
-                <div className="space-y-2">
-                  <div className="h-2 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-2 bg-gray-200 rounded w-full"></div>
-                  <div className="h-2 bg-gray-200 rounded w-5/6"></div>
-                </div>
-                <p className="text-gray-400 italic mt-3">Our AI is analyzing your conversation and preparing a summary...</p>
+              {/* Additional Notes and Actions */}
+              <div className="flex items-center justify-between h-10">
+                <button className="h-full px-3 bg-blue-500 text-white rounded-lg text-sm font-medium" onClick={handleAddNote} disabled={!note.trim()}>Add Note</button>
+                <button className="h-full px-3 bg-blue-50 text-primary rounded-lg text-sm font-medium" onClick={() => setCurrentInterface('interface3vi')}>Vietnamese</button>
               </div>
-            )}
-          </div>
-          
-          {/* Additional Notes with actions */}
-          <div className="mb-4 flex items-center justify-between h-10">
-            <button
-              className="h-full px-3 bg-blue-500 text-white rounded-lg text-sm font-medium"
-              onClick={handleAddNote}
-              disabled={!note.trim()}
-            >
-              Add Note
-            </button>
-            <button
-              className="h-full px-3 bg-blue-50 text-primary rounded-lg text-sm font-medium"
-              onClick={() => setCurrentInterface('interface3vi')}
-            >
-              Vietnamese
-            </button>
-          </div>
-          <textarea
-            placeholder="Enter any corrections or additional Information & Press Add Note to update into the Conversation Summary"
-            className="w-full p-2 border rounded-lg mb-4"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            rows={3}
-          />
-          
-          {/* Service Requests Container */}
-          <div id="summaryContainer" className="mb-6">
-            {/* Service requests processed - hidden but functional */}
-            
-            {/* Room Number and action buttons inline */}
-            <div className="mb-6 flex items-center space-x-4">
+              <textarea placeholder="Enter any corrections or additional Information & Press Add Note to update into the Conversation Summary" className="w-full p-2 border rounded-lg mb-4" value={note} onChange={(e) => setNote(e.target.value)} rows={3} />
+              {/* Room Number input */}
               <div className="flex items-center space-x-2">
                 <label className="text-sm text-gray-500">Room Number</label>
-                <input
-                  type="text"
-                  className="w-32 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-primary"
-                  value={orderSummary.roomNumber}
-                  onChange={(e) => handleInputChange('roomNumber', e.target.value)}
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium flex items-center"
-                  onClick={() => setCurrentInterface('interface2')}
-                >
-                  <span className="material-icons text-sm mr-1">arrow_back</span>Back
-                </button>
-                <button
-                  className="px-3 py-2 bg-red-500 text-white rounded-lg text-sm font-medium flex items-center"
-                  onClick={() => setCurrentInterface('interface1')}
-                >
-                  <span className="material-icons text-sm mr-1">cancel</span>Cancel
-                </button>
-                <button
-                  id="confirmOrderButton"
-                  className="px-3 py-2 bg-green-500 text-white rounded-lg text-sm font-medium flex items-center"
-                  onClick={handleConfirmOrder}
-                >
-                  <span className="material-icons text-sm mr-1">check_circle</span>Confirm
-                </button>
+                <input type="text" className="w-32 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-primary" value={orderSummary.roomNumber} onChange={(e) => handleInputChange('roomNumber', e.target.value)} />
               </div>
             </div>
-            
-            {/* Request placeholder - hidden but data still processed */}
-            <div className="hidden">
-              {orderSummary.items.length > 0 && (
-                <div>
-                  {orderSummary.items.map((item, index) => (
-                    <div key={item.id}>
-                      {/* Hidden but functional item data */}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            {/* Hidden special instructions - data is preserved but not displayed */}
-            <div className="hidden">
-              {orderSummary.specialInstructions}
-            </div>
-            
-            {/* Hidden total amount calculation - not displayed */}
-            <div className="hidden">
-              {orderSummary.totalAmount.toFixed(2)}
+            {/* Right column: control buttons at top-right */}
+            <div className="w-full md:w-1/4 flex md:justify-end">
+              <div className="flex flex-col items-end space-y-2">
+                <button className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium flex items-center" onClick={() => setCurrentInterface('interface2')}><span className="material-icons text-sm mr-1">arrow_back</span>Back</button>
+                <button className="px-3 py-2 bg-red-500 text-white rounded-lg text-sm font-medium flex items-center" onClick={() => setCurrentInterface('interface1')}><span className="material-icons text-sm mr-1">cancel</span>Cancel</button>
+                <button id="confirmOrderButton" className="px-3 py-2 bg-green-500 text-white rounded-lg text-sm font-medium flex items-center" onClick={handleConfirmOrder}><span className="material-icons text-sm mr-1">check_circle</span>Confirm</button>
+              </div>
             </div>
           </div>
         </div>
