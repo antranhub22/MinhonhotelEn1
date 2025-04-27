@@ -118,12 +118,21 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
           <button
             id="inCallButton"
             disabled
-            className="w-full mb-2 px-3 py-1 bg-green-500 text-white rounded-lg text-sm flex items-center justify-center"
+            className="w-[240px] h-[240px] mb-4 bg-green-500 text-white rounded-full flex flex-col items-center justify-center text-sm"
           >
-            <span className="animate-pulse mr-2">●</span>
-            Call in progress...
+            <span className="animate-pulse text-4xl mb-2">●</span>
+            <span>Call in progress...</span>
           </button>
-          <div id="realTimeConversation" ref={conversationRef} className="relative p-2 bg-white rounded-lg shadow-inner mb-[40px] h-8 truncate">
+          <div
+            id="realTimeConversation"
+            ref={conversationRef}
+            className="relative p-2 bg-white rounded-lg shadow-inner mb-[40px] max-h-20 overflow-hidden"
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical'
+            }}
+          >
             {[...transcripts].reverse().map((transcript) => (
               <div key={transcript.id} className="mb-2">
                 <div className="flex items-start mb-1">
