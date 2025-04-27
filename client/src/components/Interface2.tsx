@@ -128,7 +128,7 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
           <div
             id="realTimeConversation"
             ref={conversationRef}
-            className="relative p-2 bg-white rounded-lg shadow-inner w-full min-h-[60px] max-h-[128px] overflow-y-auto"
+            className="relative p-2 w-full min-h-[60px] max-h-[128px] overflow-y-auto"
           >
             {[...transcripts].reverse().map((transcript) => (
               <div key={transcript.id} className="mb-2">
@@ -136,15 +136,15 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
                   <div className={`w-8 h-8 rounded-full ${
                     transcript.role === 'assistant' ? 'bg-primary text-white' : 'bg-amber-400 text-primary-dark'
                   } flex items-center justify-center mr-2 flex-shrink-0`}>
-                    <span className="material-icons text-sm">
+                    <span className="material-icons text-base">
                       {transcript.role === 'assistant' ? 'support_agent' : 'person'}
                     </span>
                   </div>
                   <div className="flex-grow">
-                    <p className="text-sm text-gray-500 mb-1">
+                    <p className="text-sm text-white mb-1">
                       {transcript.role === 'assistant' ? 'Assistant' : 'You'}
                     </p>
-                    <p className="text-gray-800">{transcript.content}</p>
+                    <p className="text-lg text-white">{transcript.content}</p>
                   </div>
                 </div>
               </div>
