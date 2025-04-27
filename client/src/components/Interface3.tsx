@@ -539,11 +539,10 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
             <textarea
+              placeholder="Enter any corrections or additional Information & Press Add Note to update into the Conversation Summary"
+              className="w-full p-2 border rounded-lg mb-4"  
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Enter any corrections or additional information"
-              className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              rows={3}
             />
             <button
               className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-lg text-sm font-medium"
