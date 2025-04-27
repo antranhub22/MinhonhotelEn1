@@ -118,7 +118,7 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
           <button
             id="inCallButton"
             disabled
-            className="w-[240px] h-[240px] mb-4 bg-green-500 text-white rounded-full flex flex-col items-center justify-center text-sm"
+            className="w-[240px] h-[240px] mb-4 bg-green-500 text-white rounded-full flex flex-col items-center justify-center text-sm animate-pulse"
           >
             <span className="animate-pulse text-4xl mb-2">●</span>
             <span>Call in progress...</span>
