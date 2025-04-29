@@ -31,15 +31,12 @@ export const useTranscriptSocket = ({ socketUrl }: UseTranscriptSocketProps) => 
   useEffect(() => {
     if (!socket) return;
 
-    const handleUserTranscript = (data: { text: string }) => {
-      if (!state.isAssistantSpeaking) {
-        setState(prev => ({ ...prev, text: data.text }));
-      }
-    };
-
-    const handleAssistantResponse = (data: { assistant_reply_text: string }) => {
-      if (state.isAssistantSpeaking) {
-        setState(prev => ({ ...prev, text: data.assistant_reply_text }));
+    // Lắng nghe transcript realtime từ server (cả user và assistant)
+    const handleTranscript = (data: { role: string; content: string }) => {
+      if (data.role === 'assistant' && state.isAssistantSpeaking) {
+        setState(prev => ({ ...prev, text: data.content }));
+      } else if (data.role === 'user' && !state.isAssistantSpeaking) {
+        setState(prev => ({ ...prev, text: data.content }));
       }
     };
 
@@ -51,16 +48,13 @@ export const useTranscriptSocket = ({ socketUrl }: UseTranscriptSocketProps) => 
       setState(prev => ({ ...prev, isAssistantSpeaking: false }));
     };
 
-    // Đăng ký các event listeners
-    socket.on('userTranscript', handleUserTranscript);
-    socket.on('assistantResponse', handleAssistantResponse);
+    socket.on('transcript', handleTranscript);
     socket.on('assistantStartSpeaking', handleAssistantStartSpeaking);
     socket.on('assistantEndSpeaking', handleAssistantEndSpeaking);
 
     // Cleanup
     return () => {
-      socket.off('userTranscript', handleUserTranscript);
-      socket.off('assistantResponse', handleAssistantResponse);
+      socket.off('transcript', handleTranscript);
       socket.off('assistantStartSpeaking', handleAssistantStartSpeaking);
       socket.off('assistantEndSpeaking', handleAssistantEndSpeaking);
     };
