@@ -472,7 +472,10 @@ export async function translateToVietnamese(text: string): Promise<string> {
   }
 }
 
-export async function generateCallSummary(transcripts: Array<{role: string, content: string}>): Promise<string> {
+export async function generateCallSummary(
+  transcripts: Array<{role: string, content: string}>,
+  onChunk?: (chunk: string) => void
+): Promise<string> {
   try {
     if (!transcripts || transcripts.length === 0) {
       return "No conversation to summarize.";
@@ -487,28 +490,21 @@ export async function generateCallSummary(transcripts: Array<{role: string, cont
     const prompt = `
       You are a hotel service summarization specialist for Mi Nhon Hotel. 
       Summarize the following conversation between a Hotel Assistant and a Guest in a very concise and professional manner.
-      
-      IMPORTANT: For EACH separate request from the guest, structure your summary in the following format:
-      
-      Request 1:
+      \nIMPORTANT: For EACH separate request from the guest, structure your summary in the following format:
+      \nRequest 1:
       - Type of service: [service category name]
       - Request details: [comprehensive details of the request]
-      
-      Request 2:
+      \nRequest 2:
       - Type of service: [service category name]
       - Request details: [comprehensive details of the request]
-      
-      For example:
-      
-      Request 1:
+      \nFor example:
+      \nRequest 1:
       - Type of service: Room Service
       - Request details: Guest requested breakfast delivery with 2 eggs, toast, coffee to room 301 at 7:30 AM tomorrow. Guest specified hot coffee with milk on the side.
-      
-      Request 2:
+      \nRequest 2:
       - Type of service: Transportation
       - Request details: Guest needs taxi to airport tomorrow at 10:00 AM for 3 people with 4 large suitcases. Requested an SUV or larger vehicle.
-      
-      IMPORTANT INSTRUCTIONS:
+      \nIMPORTANT INSTRUCTIONS:
       1. Provide the summary only in the guest's original language (English, Russian, Korean, Chinese, or German)
       2. Be EXTREMELY comprehensive - include EVERY service request mentioned in the conversation
       3. Format with bullet points for easy scanning by hotel staff
@@ -516,48 +512,56 @@ export async function generateCallSummary(transcripts: Array<{role: string, cont
       5. If room number is not mentioned in the conversation, make a clear note that "Room number needs to be confirmed with guest"
       6. For ALL service details, include times, locations, quantities, and any specific requirements
       7. End with any required follow-up actions or confirmation needed from staff
-
-      Conversation transcript:
+      \nConversation transcript:
       ${conversationText}
-
-      Summary:
+      \nSummary:
     `;
 
-    // Call the OpenAI API with GPT-4o
+    // Call the OpenAI API with streaming if onChunk is provided
     const options = {
-      timeout: 30000, // 30 second timeout to prevent hanging
+      timeout: 30000,
       headers: { 'OpenAi-Project': projectId }
     };
-    
-    const chatCompletion = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-      messages: [
-        { role: "system", content: "You are a professional hotel service summarization specialist who creates concise and useful summaries." },
-        { role: "user", content: prompt }
-      ],
-      max_tokens: 800, // Increased tokens limit for comprehensive summaries
-      temperature: 0.5, // More deterministic for consistent summaries
-      presence_penalty: 0.1, // Slight penalty to avoid repetition
-      frequency_penalty: 0.1, // Slight penalty to avoid repetition
-    }, options);
 
-    // Return the generated summary
-    return chatCompletion.choices[0].message.content?.trim() || "Failed to generate summary.";
-  } catch (error: any) {
-    console.error("Error generating summary with OpenAI:", error);
-    
-    // Check for specific error types and provide more helpful messages
-    if (error?.code === 'invalid_api_key') {
-      return "Could not generate AI summary: API key authentication failed. Please contact hotel staff to resolve this issue.";
-    } else if (error?.status === 429 || error?.code === 'insufficient_quota') {
-      // For rate limit errors, return just the detailed error
-      console.log('Rate limit or quota exceeded, falling back to basic summary generator');
-      return generateBasicSummary(transcripts);
-    } else if (error?.status === 500) {
-      return "Could not generate AI summary: OpenAI service is currently experiencing issues. Please try again later.";
+    if (onChunk) {
+      let fullSummary = '';
+      const stream = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: "You are a professional hotel service summarization specialist who creates concise and useful summaries." },
+          { role: "user", content: prompt }
+        ],
+        max_tokens: 800,
+        temperature: 0.5,
+        presence_penalty: 0.1,
+        frequency_penalty: 0.1,
+        stream: true
+      }, options);
+      for await (const chunk of stream) {
+        const content = chunk.choices?.[0]?.delta?.content;
+        if (content) {
+          fullSummary += content;
+          onChunk(content);
+        }
+      }
+      return fullSummary.trim() || "Failed to generate summary.";
+    } else {
+      // Fallback to non-streaming
+      const chatCompletion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: "You are a professional hotel service summarization specialist who creates concise and useful summaries." },
+          { role: "user", content: prompt }
+        ],
+        max_tokens: 800,
+        temperature: 0.5,
+        presence_penalty: 0.1,
+        frequency_penalty: 0.1,
+      }, options);
+      return chatCompletion.choices[0].message.content?.trim() || "Failed to generate summary.";
     }
-    
-    // If OpenAI is unavailable for any other reason, use the basic summary as fallback
+  } catch (error: any) {
+    console.error("Error generating summary with OpenAI (streaming):", error);
     const basicSummary = generateBasicSummary(transcripts);
     return basicSummary;
   }

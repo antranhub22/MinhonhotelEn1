@@ -259,148 +259,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Store call summary from Vapi or generate with OpenAI
   app.post('/api/store-summary', async (req, res) => {
     try {
-      const { summary: summaryText, transcripts, timestamp, callId, callDuration: reqCallDuration, forceBasicSummary, orderReference } = req.body;
-      
-      // Determine if we need to generate a summary with OpenAI or use fallback
-      let finalSummary = summaryText;
-      let isAiGenerated = false;
-      
-      // If transcripts are provided and no summary is provided, try AI first then fallback
-      if (transcripts && (!summaryText || summaryText === '')) {
-        // Check if we should try using OpenAI or go straight to fallback
-        // Allow forcing basic summary from client or if no API key available
-        const useOpenAi = !req.query.skipAi && !forceBasicSummary && process.env.OPENAI_API_KEY;
-        
-        if (useOpenAi) {
-          console.log('Generating summary with OpenAI from provided transcripts');
-          try {
-            finalSummary = await generateCallSummary(transcripts);
-            isAiGenerated = true;
-          } catch (aiError) {
-            console.error('Error generating summary with OpenAI:', aiError);
-            console.log('Falling back to basic summary generation');
-            // Fall back to a basic summary if OpenAI fails
-            finalSummary = generateBasicSummary(transcripts);
-            isAiGenerated = false;
-          }
-        } else {
-          console.log('Generating basic summary from transcripts (OpenAI skipped)');
-          finalSummary = generateBasicSummary(transcripts);
-          isAiGenerated = false;
-        }
-      } 
-      // If no transcripts and no summary, try to fetch transcripts from database
-      else if (!summaryText || summaryText === '') {
-        console.log('Fetching transcripts from database for callId:', callId);
-        try {
-          const storedTranscripts = await storage.getTranscriptsByCallId(callId);
-          
-          if (storedTranscripts && storedTranscripts.length > 0) {
-            // Convert database transcripts to format expected by OpenAI function
-            const formattedTranscripts = storedTranscripts.map(t => ({
-              role: t.role,
-              content: t.content
-            }));
-            
-            // Generate summary using OpenAI
-            try {
-              finalSummary = await generateCallSummary(formattedTranscripts);
-              isAiGenerated = true; 
-            } catch (openaiError) {
-              console.error('Error using OpenAI for stored transcripts:', openaiError);
-              // Fallback to basic summary
-              finalSummary = generateBasicSummary(formattedTranscripts);
-              isAiGenerated = false;
-            }
-          } else {
-            finalSummary = "No conversation transcripts were found for this call.";
-          }
-        } catch (dbError) {
-          console.error('Error fetching transcripts from database:', dbError);
-          // Try to create a basic summary if the database operation fails
-          if (transcripts && transcripts.length > 0) {
-            finalSummary = generateBasicSummary(transcripts);
-          } else {
-            finalSummary = "Unable to generate summary due to missing conversation data.";
-          }
-        }
+      const { callId, transcripts } = req.body;
+      if (!callId || !transcripts) {
+        return res.status(400).json({ error: "Missing callId or transcripts" });
       }
-      
-      if (!finalSummary || typeof finalSummary !== 'string') {
-        return res.status(400).json({ error: 'Summary content is required' });
-      }
-      
-      // Create a valid call summary object
-      // Extract room number for storage
-      const roomNumberMatch = finalSummary.match(/room (\d+)/i) || finalSummary.match(/phòng (\d+)/i);
-      const roomNumber = roomNumberMatch ? roomNumberMatch[1] : 'unknown';
-      
-      // Extract call duration or use default
-      let durationStr = '0:00';
-      if (reqCallDuration) {
-        durationStr = typeof reqCallDuration === 'number'
-          ? `${Math.floor(reqCallDuration / 60)}:${(reqCallDuration % 60).toString().padStart(2, '0')}`
-          : reqCallDuration;
-      }
-      
-      const summaryData = insertCallSummarySchema.parse({
-        callId,
-        content: finalSummary,
-        timestamp: new Date(timestamp || Date.now()),
-        roomNumber,
-        duration: durationStr,
-        orderReference
-      });
-      
-      // Store in database
-      const result = await storage.addCallSummary(summaryData);
 
-      // Analyze the summary to extract structured service requests
-      let serviceRequests: any[] = [];
-      if (isAiGenerated && finalSummary) {
-        try {
-          console.log('Extracting service requests from AI-generated summary');
-          serviceRequests = await extractServiceRequests(finalSummary);
-          console.log(`Successfully extracted ${serviceRequests.length} service requests`);
-        } catch (extractError) {
-          console.error('Error extracting service requests:', extractError);
-        }
-      }
-      
-      // Ghi log thông tin để chuẩn bị cho việc gửi email sau khi xác nhận
-      try {
-        // Map service requests to string array
-        const serviceRequestStrings = serviceRequests.map(req => 
-          `${req.serviceType}: ${req.requestText || 'Không có thông tin chi tiết'}`
-        );
-        console.log(`Phát hiện thông tin phòng: ${roomNumber}`);
-        console.log(`Số lượng yêu cầu dịch vụ: ${serviceRequestStrings.length}`);
-        console.log(`Thời lượng cuộc gọi: ${durationStr}`);
-        console.log(`Email sẽ được gửi sau khi người dùng nhấn nút xác nhận`);
-      } catch (extractError: any) {
-        console.error('Error preparing service information:', extractError?.message || extractError);
-        // Continue even if preparation fails - don't block the API response
-      }
-      // Broadcast assistant response to all clients with this callId
-      broadcastAssistantResponse(callId, finalSummary);
-      // Return success with the summary, AI-generated flag, and extracted service requests
-      res.status(201).json({
-        success: true,
-        summary: result,
-        isAiGenerated: isAiGenerated,
-        serviceRequests: serviceRequests
+      let fullSummary = '';
+      // Use streaming summary generation and broadcast each chunk
+      fullSummary = await generateCallSummary(transcripts, (chunk) => {
+        broadcastAssistantResponse(callId, chunk, true); // true = isChunk
       });
-    } catch (error: any) {
-      console.error('Error storing call summary:', error, error.stack);
-      // Return detailed error info for debugging
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: 'Invalid summary data', details: error.errors });
-      }
-      return res.status(500).json({
-        error: 'Failed to save call summary',
-        message: error.message,
-        stack: error.stack
-      });
+
+      // After streaming, send the full summary as the final message
+      broadcastAssistantResponse(callId, fullSummary, false); // false = isChunk
+
+      return res.json({ summary: fullSummary });
+    } catch (error) {
+      console.error("Error in /api/store-summary:", error);
+      return res.status(500).json({ error: "Failed to store summary" });
     }
   });
   
@@ -978,13 +854,13 @@ Mi Nhon Hotel Mui Ne`
   });
 
   // Utility function to broadcast assistant response to all clients with the same callId
-  function broadcastAssistantResponse(callId: string, assistantReplyText: string) {
+  function broadcastAssistantResponse(callId: string, assistantReplyText: string, isChunk: boolean) {
     clients.forEach((client) => {
       if (client.callId === callId && client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify({
           type: 'assistantResponse',
           callId,
-          assistant_reply_text: assistantReplyText,
+          assistant_reply_text: isChunk ? assistantReplyText : '',
           timestamp: new Date()
         }));
       }
