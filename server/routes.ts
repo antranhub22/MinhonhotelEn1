@@ -54,39 +54,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`Client associated with call ID: ${data.callId}`);
         }
         
-        // Xử lý cả transcript và transcript(final)
-        if (
-          (data.type === 'transcript' || data.type === 'transcript(final)') &&
-          data.callId && data.role && data.content
-        ) {
-          const validatedData = {
-            callId: data.callId,
-            role: data.role,
-            content: data.content,
-            isFinal: data.type === 'transcript(final)',
-            segmentId: data.segmentId,
-            utteranceId: data.utteranceId
-          };
-          // Nếu schema chưa có các trường này, cần cập nhật schema InsertTranscript
-          await storage.addTranscript(validatedData);
-
-          // Broadcast lại cho client
-          const outMsg = JSON.stringify({
-            type: data.type,
-            callId: data.callId,
-            role: data.role,
-            content: data.content,
-            isFinal: data.type === 'transcript(final)',
-            segmentId: data.segmentId,
-            utteranceId: data.utteranceId,
-            timestamp: new Date()
-          });
-
-          clients.forEach((client) => {
-            if (client.callId === data.callId && client.readyState === WebSocket.OPEN) {
-              client.send(outMsg);
-            }
-          });
+        // Handle transcript from Vapi
+        if (data.type === 'transcript' && data.callId && data.role && data.content) {
+          try {
+            const validatedData = insertTranscriptSchema.parse({
+              callId: data.callId,
+              role: data.role,
+              content: data.content
+            });
+            
+            // Store transcript in database
+            await storage.addTranscript(validatedData);
+            
+            // Broadcast transcript to all clients with matching callId
+            const message = JSON.stringify({
+              type: 'transcript',
+              callId: data.callId,
+              role: data.role,
+              content: data.content,
+              timestamp: new Date()
+            });
+            
+            clients.forEach((client) => {
+              if (client.callId === data.callId && client.readyState === WebSocket.OPEN) {
+                client.send(message);
+              }
+            });
+          } catch (error) {
+            console.error('Invalid transcript data:', error);
+          }
         }
       } catch (error) {
         console.error('Error parsing WebSocket message:', error);
