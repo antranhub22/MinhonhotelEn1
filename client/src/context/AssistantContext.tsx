@@ -112,30 +112,16 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     setActiveOrders(prev => [...prev, order]);
   };
 
-  // Add transcript to the list (realtime + final update)
-  const addOrUpdateTranscript = React.useCallback((transcript: Omit<Transcript, 'id' | 'timestamp' | 'callId'> & { isFinal?: boolean, segmentId?: string, utteranceId?: string }) => {
-    setTranscripts(prev => {
-      // Tìm transcript cùng segmentId/utteranceId
-      const idx = prev.findIndex(t => (transcript.segmentId && t.segmentId === transcript.segmentId) || (transcript.utteranceId && t.utteranceId === transcript.utteranceId));
-      if (idx !== -1) {
-        // Nếu là final, cập nhật lại nội dung
-        const updated = [...prev];
-        updated[idx] = { ...updated[idx], ...transcript, isFinal: transcript.isFinal };
-        return updated;
-      } else {
-        // Nếu chưa có, thêm mới
-        return [
-          ...prev,
-          {
-            ...transcript,
-            id: Date.now() as unknown as number,
-            callId: callDetails?.id || `call-${Date.now()}`,
-            timestamp: new Date()
-          }
-        ];
-      }
-    });
-  }, [callDetails]);
+  // Add transcript to the list
+  const addTranscript = React.useCallback((transcript: Omit<Transcript, 'id' | 'timestamp' | 'callId'>) => {
+    const newTranscript: Transcript = {
+      ...transcript,
+      id: Date.now() as unknown as number,
+      callId: callDetails?.id || `call-${Date.now()}`,
+      timestamp: new Date()
+    };
+    setTranscripts(prev => [...prev, newTranscript]);
+  }, []);
 
   // Initialize Vapi when component mounts
   useEffect(() => {
@@ -156,15 +142,16 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
           console.log(`Message type: ${message.type}`);
         }
         
-        // Xử lý cả transcript và transcript(final)
-        if ((message.type === 'transcript' || message.type === 'transcript(final)')) {
-          addOrUpdateTranscript({
+        // Handle transcripts
+        if (message.type === 'transcript' && message.transcriptType === 'final') {
+          const newTranscript: Transcript = {
+            id: Date.now() as unknown as number,
+            callId: callDetails?.id || `call-${Date.now()}`,
             role: message.role,
-            content: message.transcript || message.content,
-            isFinal: message.type === 'transcript(final)',
-            segmentId: message.segmentId,
-            utteranceId: message.utteranceId
-          });
+            content: message.transcript,
+            timestamp: new Date()
+          };
+          setTranscripts(prev => [...prev, newTranscript]);
         }
         
         // Handle end of call report with summary
@@ -246,7 +233,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
         vapiInstance.stop();
       }
     };
-  }, [callDetails, addOrUpdateTranscript]);
+  }, []);
 
   useEffect(() => {
     if (currentInterface === 'interface2') {
@@ -533,7 +520,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     currentInterface,
     setCurrentInterface,
     transcripts,
-    addTranscript: addOrUpdateTranscript,
+    addTranscript,
     orderSummary,
     setOrderSummary,
     callDetails,
