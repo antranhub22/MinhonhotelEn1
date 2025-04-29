@@ -47,7 +47,6 @@ app.use((req, res, next) => {
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
     res.status(status).json({ message });
     throw err;
   });
@@ -61,12 +60,8 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Use PORT from environment variable provided by Render
   const port = process.env.PORT || 10000;
-  server.listen({
-    port,
-    host: "0.0.0.0",  // Listen on all network interfaces
-  }, () => {
-    log(`serving on port ${port}`);
+  server.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
   });
 })();
