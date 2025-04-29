@@ -61,12 +61,11 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Use PORT from environment variable or default to 3000
-  const port = process.env.PORT || 3000;
+  // Use PORT from environment variable provided by Render
+  const port = process.env.PORT || 10000;
   server.listen({
     port,
-    host: "localhost",
-    reusePort: true,
+    host: "0.0.0.0",  // Listen on all network interfaces
   }, () => {
     log(`serving on port ${port}`);
   });
