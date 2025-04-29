@@ -4,6 +4,9 @@ export interface Transcript {
   role: 'assistant' | 'user';
   content: string;
   timestamp: Date;
+  isFinal?: boolean;
+  segmentId?: string;
+  utteranceId?: string;
 }
 
 export interface CallSummary {
