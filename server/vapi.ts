@@ -1,24 +1,23 @@
-import { Vapi } from '@vapi-ai/web';
+import { VapiClient } from '@vapi-ai/web';
 
-if (!process.env.VAPI_API_KEY) {
-  throw new Error('VAPI_API_KEY is not set in environment variables');
+if (!process.env.VITE_VAPI_PUBLIC_KEY) {
+  throw new Error('VITE_VAPI_PUBLIC_KEY is not set in environment variables');
 }
 
-if (!process.env.VAPI_ASSISTANT_ID) {
-  throw new Error('VAPI_ASSISTANT_ID is not set in environment variables');
+if (!process.env.VITE_VAPI_ASSISTANT_ID) {
+  throw new Error('VITE_VAPI_ASSISTANT_ID is not set in environment variables');
 }
 
-export const vapi = new Vapi({
-  apiKey: process.env.VAPI_API_KEY,
-  assistantId: process.env.VAPI_ASSISTANT_ID,
+export const vapi = new VapiClient({
+  publicKey: process.env.VITE_VAPI_PUBLIC_KEY,
 });
 
 // Function to start a call
 export async function startCall(phoneNumber: string) {
   try {
-    const call = await vapi.startCall({
+    const call = await vapi.calls.create({
       phoneNumber,
-      assistantId: process.env.VAPI_ASSISTANT_ID!,
+      assistantId: process.env.VITE_VAPI_ASSISTANT_ID!,
     });
     return call;
   } catch (error) {
@@ -30,7 +29,7 @@ export async function startCall(phoneNumber: string) {
 // Function to end a call
 export async function endCall(callId: string) {
   try {
-    await vapi.endCall(callId);
+    await vapi.calls.end(callId);
   } catch (error) {
     console.error('Error ending call:', error);
     throw error;
@@ -40,7 +39,7 @@ export async function endCall(callId: string) {
 // Function to get call status
 export async function getCallStatus(callId: string) {
   try {
-    const status = await vapi.getCallStatus(callId);
+    const status = await vapi.calls.get(callId);
     return status;
   } catch (error) {
     console.error('Error getting call status:', error);
@@ -51,7 +50,7 @@ export async function getCallStatus(callId: string) {
 // Function to get call transcript
 export async function getCallTranscript(callId: string) {
   try {
-    const transcript = await vapi.getCallTranscript(callId);
+    const transcript = await vapi.calls.getTranscript(callId);
     return transcript;
   } catch (error) {
     console.error('Error getting call transcript:', error);

@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 
 // Initialize OpenAI client
 const openai = new OpenAI({ apiKey: import.meta.env.VITE_OPENAI_API_KEY });
@@ -31,7 +32,7 @@ Core Responsibilities:
  */
 export async function getAIChatResponse(userMessage: string, context?: string): Promise<string> {
   // Build messages array
-  const messages = [];
+  const messages: ChatCompletionMessageParam[] = [];
   // System prompt
   messages.push({ role: 'system', content: SYSTEM_PROMPT });
   // Include retrieval context if provided
@@ -44,7 +45,7 @@ export async function getAIChatResponse(userMessage: string, context?: string): 
   // Call OpenAI
   const response = await openai.chat.completions.create({
     model: 'gpt-3.5-turbo',
-    messages
+    messages: messages
   });
-  return response.choices?.[0]?.message?.content || 'I'm sorry, I encountered an error processing your request.';
+  return response.choices[0]?.message?.content || "I'm sorry, I encountered an error processing your request.";
 } 
