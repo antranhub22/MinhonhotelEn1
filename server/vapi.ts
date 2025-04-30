@@ -16,15 +16,15 @@ interface VapiTranscript {
   [key: string]: any;
 }
 
-if (!process.env.VAPI_PUBLIC_KEY) {
-  throw new Error('VAPI_PUBLIC_KEY is not set in environment variables');
+if (!process.env.VITE_VAPI_PUBLIC_KEY) {
+  throw new Error('VITE_VAPI_PUBLIC_KEY is not set in environment variables');
 }
 
-if (!process.env.VAPI_ASSISTANT_ID) {
-  throw new Error('VAPI_ASSISTANT_ID is not set in environment variables');
+if (!process.env.VITE_VAPI_ASSISTANT_ID) {
+  throw new Error('VITE_VAPI_ASSISTANT_ID is not set in environment variables');
 }
 
-export const vapi = new VapiClient(process.env.VAPI_PUBLIC_KEY);
+export const vapi = new VapiClient(process.env.VITE_VAPI_PUBLIC_KEY);
 
 // Set up event listeners
 vapi.on('call-start', () => {
@@ -50,8 +50,8 @@ vapi.on('error', (error) => {
 // Function to start a call
 export async function startCall() {
   try {
-    console.log('Starting call with assistant:', process.env.VAPI_ASSISTANT_ID);
-    const call = await vapi.start(process.env.VAPI_ASSISTANT_ID!);
+    console.log('Starting call with assistant:', process.env.VITE_VAPI_ASSISTANT_ID);
+    const call = await vapi.start(process.env.VITE_VAPI_ASSISTANT_ID!);
     console.log('Call started successfully:', call);
     return call;
   } catch (error) {

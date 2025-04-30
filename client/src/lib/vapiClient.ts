@@ -1,7 +1,16 @@
 import Vapi from '@vapi-ai/web';
 
-// Initialize with environment variable or fallback
-const PUBLIC_KEY = import.meta.env.VITE_VAPI_PUBLIC_KEY || 'demo';
+// Initialize with environment variables
+const PUBLIC_KEY = import.meta.env.VITE_VAPI_PUBLIC_KEY;
+const ASSISTANT_ID = import.meta.env.VITE_VAPI_ASSISTANT_ID;
+
+if (!PUBLIC_KEY) {
+  throw new Error('VITE_VAPI_PUBLIC_KEY is not set in environment variables');
+}
+
+if (!ASSISTANT_ID) {
+  throw new Error('VITE_VAPI_ASSISTANT_ID is not set in environment variables');
+}
 
 // Option to force basic summary generation (for testing fallback)
 export const FORCE_BASIC_SUMMARY = false; // Set to true to always use basic summary
