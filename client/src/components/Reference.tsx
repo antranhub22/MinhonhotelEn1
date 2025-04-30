@@ -142,4 +142,4 @@ const Reference: React.FC<ReferenceProps> = ({ references }) => {
   );
 };
 
-export default Reference; 
+export default React.memo(Reference); 

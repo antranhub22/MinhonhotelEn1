@@ -144,4 +144,4 @@ const EmailTester: React.FC = () => {
   );
 };
 
-export default EmailTester;
+export default React.memo(EmailTester);

@@ -235,3 +235,14 @@ export const handleMessage = (message: VapiMessage) => {
     }
   }
 };
+
+// Lấy tất cả checkpoint đã lưu
+const checkpoints = JSON.parse(localStorage.getItem('checkpoints') || '[]');
+console.log('Tất cả checkpoints:', checkpoints);
+
+// Lọc các checkpoint theo ngày 29/04/2024
+const filtered = checkpoints.filter(cp => {
+  const d = new Date(cp.timestamp);
+  return d.getFullYear() === 2024 && d.getMonth() === 3 && d.getDate() === 29; // getMonth() = 3 là tháng 4
+});
+console.log('Checkpoints ngày 29/04/2024:', filtered);

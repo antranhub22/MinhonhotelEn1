@@ -563,4 +563,4 @@ const Interface3: React.FC<Interface3Props> = ({ isActive }) => {
   );
 };
 
-export default Interface3;
+export default React.memo(Interface3);

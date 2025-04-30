@@ -134,4 +134,4 @@ const Interface1: React.FC<Interface1Props> = ({ isActive }) => {
   );
 };
 
-export default Interface1;
+export default React.memo(Interface1);

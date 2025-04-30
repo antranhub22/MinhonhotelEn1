@@ -8,4 +8,4 @@ const ModelOutput: React.FC = () => {
   );
 };
 
-export default ModelOutput; 
+export default React.memo(ModelOutput); 

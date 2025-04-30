@@ -425,4 +425,4 @@ const Interface3Vi: React.FC<Interface3ViProps> = ({ isActive }) => {
   );
 };
 
-export default Interface3Vi;
+export default React.memo(Interface3Vi);

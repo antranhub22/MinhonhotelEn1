@@ -190,4 +190,4 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
   );
 };
 
-export default Interface2;
+export default React.memo(Interface2);

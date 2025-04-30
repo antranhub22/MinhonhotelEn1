@@ -59,4 +59,4 @@ const VoiceAssistant: React.FC = () => {
   );
 };
 
-export default VoiceAssistant;
+export default React.memo(VoiceAssistant);

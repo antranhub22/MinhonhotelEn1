@@ -37,12 +37,13 @@ interface AssistantContextType {
   micLevel: number;
   resetToCheckpoint: () => void;
   checkpoints: Checkpoint[];
-  saveCheckpoint: () => void;
+  saveCheckpoint: (name?: string) => void;
   loadCheckpoint: (checkpointId: string) => void;
 }
 
 interface Checkpoint {
   id: string;
+  name?: string;
   timestamp: Date;
   transcripts: Transcript[];
   orderSummary: OrderSummary | null;
@@ -581,9 +582,10 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
   };
 
   // Save current state as a checkpoint
-  const saveCheckpoint = () => {
+  const saveCheckpoint = (name?: string) => {
     const newCheckpoint: Checkpoint = {
       id: Date.now().toString(),
+      name: name || `Checkpoint ${new Date().toLocaleString()}`,
       timestamp: new Date(),
       transcripts: [...transcripts],
       orderSummary: orderSummary ? { ...orderSummary } : null,

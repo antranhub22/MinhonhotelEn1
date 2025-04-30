@@ -64,4 +64,4 @@ const CallManager: React.FC = () => {
   );
 };
 
-export default CallManager; 
+export default React.memo(CallManager); 

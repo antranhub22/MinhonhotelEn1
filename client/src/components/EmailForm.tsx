@@ -13,6 +13,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from '@/lib/queryClient';
+import React from 'react';
 
 interface EmailFormProps {
   summaryContent: string;
@@ -125,3 +126,5 @@ export function EmailForm({ summaryContent, serviceRequests, roomNumber }: Email
     </Card>
   );
 }
+
+export default React.memo(EmailForm);

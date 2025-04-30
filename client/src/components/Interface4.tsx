@@ -55,4 +55,4 @@ const Interface4: React.FC<Interface4Props> = ({ isActive }) => {
   );
 };
 
-export default Interface4;
+export default React.memo(Interface4);
