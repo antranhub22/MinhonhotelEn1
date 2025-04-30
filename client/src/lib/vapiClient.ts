@@ -1,8 +1,17 @@
-import Vapi, { VapiMessage, ButtonConfig } from '@vapi-ai/web';
+import Vapi, { VapiMessage } from '@vapi-ai/web';
+import type { ButtonConfig } from '@vapi-ai/web';
 
 // Initialize with environment variables
-const PUBLIC_KEY = import.meta.env.VITE_VAPI_PUBLIC_KEY || 'demo';
+const PUBLIC_KEY = import.meta.env.VITE_VAPI_PUBLIC_KEY;
 const ASSISTANT_ID = import.meta.env.VITE_VAPI_ASSISTANT_ID;
+
+if (!PUBLIC_KEY) {
+  console.error('VITE_VAPI_PUBLIC_KEY is not set in environment variables');
+}
+
+if (!ASSISTANT_ID) {
+  console.error('VITE_VAPI_ASSISTANT_ID is not set in environment variables');
+}
 
 // Option to force basic summary generation (for testing fallback)
 export const FORCE_BASIC_SUMMARY = false; // Set to true to always use basic summary
@@ -10,14 +19,23 @@ export const FORCE_BASIC_SUMMARY = false; // Set to true to always use basic sum
 export let vapiInstance: Vapi | null = null;
 
 export const initVapi = () => {
-  vapiInstance = new Vapi(PUBLIC_KEY);
+  if (!PUBLIC_KEY) {
+    throw new Error('Cannot initialize Vapi: PUBLIC_KEY is not set');
+  }
 
-  vapiInstance.on('speech-start', () => {
-    console.log('Speech has started');
-  });
+  try {
+    vapiInstance = new Vapi(PUBLIC_KEY);
 
-  setupVapiEventListeners();
-  return vapiInstance;
+    vapiInstance.on('speech-start', () => {
+      console.log('Speech has started');
+    });
+
+    setupVapiEventListeners();
+    return vapiInstance;
+  } catch (error) {
+    console.error('Failed to initialize Vapi:', error);
+    throw error;
+  }
 };
 
 // Event handling will be delegated to the AssistantContext
@@ -51,49 +69,53 @@ function setupVapiEventListeners() {
   
   // Message event (function calls and transcripts)
   vapiInstance.on('message', (message: VapiMessage) => {
-    console.log('Received message:', message);
+    console.log('Message received:', message);
     
-    // Handle end of call report with summary
-    if (message.type === 'end_of_call_report' && message.summary) {
-      console.log('End of call report received with summary:', message.summary);
-      
-      // Display the summary in the container if it exists
-      const summaryContainer = document.getElementById('summary-container');
-      if (summaryContainer) {
-        const summaryContent = `
-          <div class="p-4 bg-blue-50 rounded-lg shadow-sm">
-            <h3 class="font-medium text-lg mb-2 text-blue-800">Call Summary</h3>
-            <p class="text-gray-700">${message.summary}</p>
-          </div>
-        `;
-        summaryContainer.innerHTML = summaryContent;
-      }
-      
-      // Send the summary to the server
-      fetch('/api/store-summary', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          summary: message.summary,
-          timestamp: new Date().toISOString()
-        }),
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Network response was not ok: ${response.status}`);
+    if (message.type === 'end_of_call_report') {
+      const endOfCallReport = message as VapiMessage;
+      if (endOfCallReport.summary) {
+        console.log('End of call report received with summary:', endOfCallReport.summary);
+        
+        // Display the summary in the container if it exists
+        const summaryContainer = document.getElementById('summary-container');
+        if (summaryContainer) {
+          const summaryContent = `
+            <div class="p-4 bg-blue-50 rounded-lg shadow-sm">
+              <h3 class="font-medium text-lg mb-2 text-blue-800">Call Summary</h3>
+              <p class="text-gray-700">${endOfCallReport.summary}</p>
+            </div>
+          `;
+          summaryContainer.innerHTML = summaryContent;
         }
-        console.log('Summary successfully sent to server');
-      })
-      .catch((error: Error) => {
-        console.error('Error sending summary to server:', error);
-      });
+        
+        // Send the summary to the server
+        fetch('/api/store-summary', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            summary: endOfCallReport.summary,
+            timestamp: new Date().toISOString()
+          }),
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Network response was not ok: ${response.status}`);
+          }
+          console.log('Summary successfully sent to server');
+        })
+        .catch((error: Error) => {
+          console.error('Error sending summary to server:', error);
+        });
+      }
     }
     
-    // Special handling for status updates to detect end of call
-    if (message.type === 'status-update' && message.status === 'ended') {
-      console.log('Call ended with reason:', message.endedReason);
+    if (message.type === 'status-update') {
+      const statusUpdate = message as VapiMessage;
+      if (statusUpdate.status === 'ended') {
+        console.log('Call ended with reason:', statusUpdate.endedReason);
+      }
     }
   });
   
@@ -133,6 +155,14 @@ export const buttonConfig: ButtonConfig = {
 
 export const startCall = async () => {
   try {
+    if (!PUBLIC_KEY) {
+      throw new Error('Cannot start call: PUBLIC_KEY is not set');
+    }
+
+    if (!ASSISTANT_ID) {
+      throw new Error('Cannot start call: ASSISTANT_ID is not set');
+    }
+
     if (!vapiInstance) {
       initVapi();
     }
@@ -141,9 +171,7 @@ export const startCall = async () => {
       throw new Error('Failed to initialize Vapi client');
     }
 
-    await vapiInstance.start({
-      assistantId: ASSISTANT_ID
-    });
+    await vapiInstance.start(ASSISTANT_ID);
 
     return vapiInstance;
   } catch (error: unknown) {
@@ -159,11 +187,17 @@ export const handleVolumeChange = (volume: number) => {
 export const handleMessage = (message: VapiMessage) => {
   console.log('Message received:', message);
   
-  if (message.type === 'end_of_call_report' && message.summary) {
-    console.log('End of call report received with summary:', message.summary);
+  if (message.type === 'end_of_call_report') {
+    const endOfCallReport = message as VapiMessage;
+    if (endOfCallReport.summary) {
+      console.log('End of call report received with summary:', endOfCallReport.summary);
+    }
   }
   
-  if (message.type === 'status-update' && message.status === 'ended') {
-    console.log('Call ended with reason:', message.endedReason);
+  if (message.type === 'status-update') {
+    const statusUpdate = message as VapiMessage;
+    if (statusUpdate.status === 'ended') {
+      console.log('Call ended with reason:', statusUpdate.endedReason);
+    }
   }
 };
