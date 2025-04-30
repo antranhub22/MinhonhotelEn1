@@ -373,6 +373,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const serviceRequestStrings = serviceRequests.map(req => 
           `${req.serviceType}: ${req.requestText || 'Không có thông tin chi tiết'}`
         );
+        
         console.log(`Phát hiện thông tin phòng: ${roomNumber}`);
         console.log(`Số lượng yêu cầu dịch vụ: ${serviceRequestStrings.length}`);
         console.log(`Thời lượng cuộc gọi: ${durationStr}`);
@@ -381,8 +382,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('Error preparing service information:', extractError?.message || extractError);
         // Continue even if preparation fails - don't block the API response
       }
-      // Broadcast assistant response to all clients with this callId
-      broadcastAssistantResponse(callId, finalSummary);
+      
       // Return success with the summary, AI-generated flag, and extracted service requests
       res.status(201).json({
         success: true,
@@ -976,20 +976,6 @@ Mi Nhon Hotel Mui Ne`
       res.status(500).json({ error: 'Invalid REFERENCE_MAP JSON' });
     }
   });
-
-  // Utility function to broadcast assistant response to all clients with the same callId
-  function broadcastAssistantResponse(callId: string, assistantReplyText: string) {
-    clients.forEach((client) => {
-      if (client.callId === callId && client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify({
-          type: 'assistantResponse',
-          callId,
-          assistant_reply_text: assistantReplyText,
-          timestamp: new Date()
-        }));
-      }
-    });
-  }
 
   return httpServer;
 }
