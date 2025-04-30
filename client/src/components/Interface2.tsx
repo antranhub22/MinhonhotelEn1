@@ -8,6 +8,7 @@ interface Interface2Props {
 }
 
 const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
+  console.log('Interface2 rendered, isActive:', isActive);
   const { 
     transcripts, 
     callDetails,
@@ -19,27 +20,34 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
     micLevel
   } = useAssistant();
   
+  console.log('Current transcripts:', transcripts);
+  
   // Add state for references
   const [references, setReferences] = useState<ReferenceItem[]>([]);
   
   // Initialize reference service
   useEffect(() => {
+    console.log('Initializing reference service');
     referenceService.initialize();
   }, []);
   
   // Update references when new transcripts arrive
   useEffect(() => {
+    console.log('Transcripts updated, checking for references');
     // Only look at user messages for reference requests
     const userMessages = transcripts.filter(t => t.role === 'user');
+    console.log('User messages:', userMessages);
     const matches: ReferenceItem[] = [];
     userMessages.forEach(msg => {
       const found = referenceService.findReferences(msg.content);
+      console.log('Found references for message:', found);
       found.forEach(ref => {
         if (!matches.find(m => m.url === ref.url)) {
           matches.push(ref);
         }
       });
     });
+    console.log('Setting references:', matches);
     setReferences(matches);
   }, [transcripts]);
   
@@ -95,6 +103,7 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
   
   // Scroll to top of conversation when new messages arrive
   useEffect(() => {
+    console.log('Transcripts or isActive changed, scrolling to top');
     if (conversationRef.current && isActive) {
       conversationRef.current.scrollTop = 0;
     }

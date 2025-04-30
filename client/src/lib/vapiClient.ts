@@ -5,6 +5,11 @@ import type { ButtonConfig } from '@vapi-ai/web';
 const PUBLIC_KEY = import.meta.env.VITE_VAPI_PUBLIC_KEY;
 const ASSISTANT_ID = import.meta.env.VITE_VAPI_ASSISTANT_ID;
 
+// Debug log
+console.log('Environment variables:');
+console.log('VITE_VAPI_PUBLIC_KEY:', import.meta.env.VITE_VAPI_PUBLIC_KEY);
+console.log('VITE_VAPI_ASSISTANT_ID:', import.meta.env.VITE_VAPI_ASSISTANT_ID);
+
 if (!PUBLIC_KEY) {
   console.error('VITE_VAPI_PUBLIC_KEY is not set in environment variables');
 }
@@ -20,11 +25,16 @@ export let vapiInstance: Vapi | null = null;
 
 export const initVapi = () => {
   if (!PUBLIC_KEY) {
+    console.error('Cannot initialize Vapi: PUBLIC_KEY is not set');
     throw new Error('Cannot initialize Vapi: PUBLIC_KEY is not set');
   }
 
   try {
+    console.log('Initializing Vapi with PUBLIC_KEY:', PUBLIC_KEY);
+    console.log('ASSISTANT_ID:', ASSISTANT_ID);
+    
     vapiInstance = new Vapi(PUBLIC_KEY);
+    console.log('Vapi instance created successfully');
 
     vapiInstance.on('speech-start', () => {
       console.log('Speech has started');
@@ -40,7 +50,12 @@ export const initVapi = () => {
 
 // Event handling will be delegated to the AssistantContext
 function setupVapiEventListeners() {
-  if (!vapiInstance) return;
+  if (!vapiInstance) {
+    console.error('Cannot setup event listeners: vapiInstance is null');
+    return;
+  }
+  
+  console.log('Setting up Vapi event listeners');
   
   // Speech start event
   vapiInstance.on('speech-start', () => {
@@ -69,7 +84,11 @@ function setupVapiEventListeners() {
   
   // Message event (function calls and transcripts)
   vapiInstance.on('message', (message: VapiMessage) => {
-    console.log('Message received:', message);
+    console.log('Message received in AssistantContext:', message);
+    console.log(`Message type: ${message.type}`);
+    console.log(`Transcript type: ${message.transcriptType}`);
+    console.log(`Message role: ${message.role}`);
+    console.log(`Message content: ${message.transcript || message.content}`);
     
     if (message.type === 'end_of_call_report') {
       const endOfCallReport = message as VapiMessage;
@@ -116,6 +135,17 @@ function setupVapiEventListeners() {
       if (statusUpdate.status === 'ended') {
         console.log('Call ended with reason:', statusUpdate.endedReason);
       }
+    }
+
+    if (message.type === 'transcript' && message.transcriptType === 'final') {
+      const newTranscript: Transcript = {
+        id: Date.now() as unknown as number,
+        callId: callDetails?.id || `call-${Date.now()}`,
+        role: message.role,
+        content: message.transcript,
+        timestamp: new Date()
+      };
+      setTranscripts(prev => [...prev, newTranscript]);
     }
   });
   

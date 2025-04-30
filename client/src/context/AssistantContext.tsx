@@ -168,15 +168,19 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       });
       // Message handler for transcripts and reports
       const handleMessage = async (message: any) => {
-        console.log('Message received:', message);
+        console.log('Message received in AssistantContext:', message);
         
         // Debug all message types from Vapi
         if (message.type) {
           console.log(`Message type: ${message.type}`);
+          console.log(`Transcript type: ${message.transcriptType}`);
+          console.log(`Message role: ${message.role}`);
+          console.log(`Message content: ${message.transcript || message.content}`);
         }
         
         // Handle transcripts
         if (message.type === 'transcript' && message.transcriptType === 'final') {
+          console.log('Adding new transcript to state');
           const newTranscript: Transcript = {
             id: Date.now() as unknown as number,
             callId: callDetails?.id || `call-${Date.now()}`,
@@ -184,7 +188,13 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
             content: message.transcript,
             timestamp: new Date()
           };
-          setTranscripts(prev => [...prev, newTranscript]);
+          console.log('New transcript:', newTranscript);
+          setTranscripts(prev => {
+            console.log('Previous transcripts:', prev);
+            const updated = [...prev, newTranscript];
+            console.log('Updated transcripts:', updated);
+            return updated;
+          });
         }
         
         // Handle end of call report with summary
@@ -314,17 +324,21 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
 
   // Start call function
   const startCall = async () => {
+    console.log('Starting call...');
     // Record request received time
     setRequestReceivedAt(new Date());
     if (vapiInstance) {
       try {
         const assistant = import.meta.env.VITE_VAPI_ASSISTANT_ID || "demo";
+        console.log('Starting call with assistant:', assistant);
         const call = await vapiInstance.start(assistant);
+        console.log('Call started:', call);
         
         // Reset email sent flag for new call
         setEmailSentForCurrentSession(false);
         
         if (call) {
+          console.log('Initializing call details');
           // Initialize call details - we don't set roomNumber here
           // as it should be asked for and extracted from conversation
           setCallDetails({
@@ -338,16 +352,21 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
         }
         
         // Clear previous transcripts
+        console.log('Clearing previous transcripts');
         setTranscripts([]);
         
         // Change interface to call in progress
+        console.log('Switching to interface2');
         setCurrentInterface('interface2');
         
         // Reset call duration
+        console.log('Resetting call duration');
         setCallDuration(0);
       } catch (error) {
         console.error("Failed to start call:", error);
       }
+    } else {
+      console.error("Cannot start call: vapiInstance is null");
     }
   };
 
