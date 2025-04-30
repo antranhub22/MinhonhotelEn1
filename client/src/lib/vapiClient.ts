@@ -29,18 +29,6 @@ export function initVapi() {
         throw new Error('Missing required VAPI configuration');
       }
 
-      // Check microphone permissions
-      if (typeof navigator !== 'undefined' && navigator.mediaDevices) {
-        navigator.mediaDevices.getUserMedia({ audio: true })
-          .then(stream => {
-            stream.getTracks().forEach(track => track.stop());
-          })
-          .catch(error => {
-            console.error('Microphone access denied:', error);
-            throw new Error('Microphone access is required for VAPI');
-          });
-      }
-
       // Initialize VAPI instance
       vapiInstance = new Vapi(PUBLIC_KEY);
       
@@ -60,7 +48,7 @@ export function initVapi() {
     } catch (error) {
       console.error('Failed to initialize Vapi:', error);
       vapiInstance = null;
-      throw error; // Re-throw the error to handle it in the calling code
+      throw error;
     }
   }
   
@@ -158,44 +146,43 @@ export async function startCall() {
   }
 
   try {
-    // Check microphone permissions again before starting call
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    stream.getTracks().forEach(track => track.stop());
+    // Check microphone permissions first
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop());
+    } catch (micError) {
+      console.error('Microphone access error:', micError);
+      if (micError instanceof Error) {
+        if (micError.name === 'NotAllowedError') {
+          throw new Error('Microphone access is required for VAPI calls');
+        }
+        if (micError.name === 'NotFoundError') {
+          throw new Error('No microphone found on this device');
+        }
+      }
+      throw micError;
+    }
 
     console.log('Starting call with config:', {
       assistantId: ASSISTANT_ID,
       modelOutputInMessagesEnabled: true
     });
     
-    const call = await vapiInstance.start(ASSISTANT_ID, {
-      modelOutputInMessagesEnabled: true
-    });
+    const call = await vapiInstance.start(ASSISTANT_ID);
 
     if (!call) {
       throw new Error('Call object is null after starting');
     }
 
-    if (!call.webCallUrl) {
-      console.warn('webCallUrl is null, this might indicate a connection issue');
-    }
-
     console.log('Call started successfully:', {
       callId: call.id,
       status: call.status,
-      webCallUrl: !!call.webCallUrl
+      webCallUrl: call.webCallUrl
     });
     
     return call;
   } catch (error) {
     console.error('Error starting call:', error);
-    if (error instanceof Error) {
-      if (error.name === 'NotAllowedError') {
-        throw new Error('Microphone access is required for VAPI calls');
-      }
-      if (error.name === 'NotFoundError') {
-        throw new Error('No microphone found on this device');
-      }
-    }
     throw error;
   }
 }
