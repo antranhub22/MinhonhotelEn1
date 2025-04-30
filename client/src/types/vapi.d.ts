@@ -24,28 +24,19 @@ declare module '@vapi-ai/web' {
     debug?: boolean;
   }
 
-  export interface SpeechConfig {
-    enabled: boolean;
-    autoStart?: boolean;
-  }
-
-  export interface AssistantOverrides {
+  export interface VapiOptions {
     modelOutputInMessagesEnabled?: boolean;
-    variableValues?: Record<string, any>;
-    speech?: SpeechConfig;
   }
 
   export default class Vapi {
-    constructor(publicKey: string, config?: VapiConfig);
+    constructor(publicKey: string);
     
     on(event: string, callback: (data: any) => void): void;
-    start(assistantId: string, overrides?: AssistantOverrides): Promise<any>;
+    start(assistantId: string, options?: VapiOptions): Promise<any>;
     stop(): Promise<void>;
     send(data: any): void;
     setMuted(muted: boolean): void;
     isMuted(): boolean;
     say(message: string, endCallAfterSpoken?: boolean): void;
-    getCallStatus(): Promise<VapiStatus>;
-    getCallTranscript(): Promise<VapiTranscript>;
   }
 } 

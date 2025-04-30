@@ -133,6 +133,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       vapi.on('volume-level', (level: number) => {
         setMicLevel(level);
       });
+
       // Message handler for transcripts and reports
       const handleMessage = async (message: any) => {
         console.log('Message received:', message);
@@ -200,39 +201,23 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
                   updatedSummary.items = parsedDetails.items;
                 }
                 
-                // Update total amount
-                if (parsedDetails.totalAmount) {
-                  updatedSummary.totalAmount = parsedDetails.totalAmount;
-                } else {
-                  // Recalculate based on current items
-                  updatedSummary.totalAmount = updatedSummary.items.reduce(
-                    (total, item) => total + (item.price * item.quantity), 
-                    0
-                  );
-                }
-                
-                console.log('Updated order summary with Vapi-extracted information:', updatedSummary);
                 return updatedSummary;
               });
             }
-          } catch (parseError) {
-            console.error('Error extracting order details from Vapi summary:', parseError);
-            // Keep existing order summary on error
+          } catch (error) {
+            console.error('Error parsing summary:', error);
           }
-          
-          // No need to manually update the container or send to server
-          // This is now handled in vapiClient.ts to follow the vanilla JS approach
         }
       };
-      
+
       vapi.on('message', handleMessage);
+      
+      return () => {
+        // Clean up event listeners
+        vapi.on('message', () => {});
+        vapi.on('volume-level', () => {});
+      };
     }
-    
-    return () => {
-      if (vapiInstance) {
-        vapiInstance.stop();
-      }
-    };
   }, []);
 
   useEffect(() => {
@@ -281,40 +266,34 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
 
   // Start call function
   const startCall = async () => {
-    // Record request received time
-    setRequestReceivedAt(new Date());
-    if (vapiInstance) {
-      try {
-        const assistant = import.meta.env.VITE_VAPI_ASSISTANT_ID || "demo";
-        const call = await vapiInstance.start(assistant);
-        
-        // Reset email sent flag for new call
-        setEmailSentForCurrentSession(false);
-        
-        if (call) {
-          // Initialize call details - we don't set roomNumber here
-          // as it should be asked for and extracted from conversation
-          setCallDetails({
-            id: call.id || `call-${Date.now()}`,
-            roomNumber: '',
-            duration: '00:00',
-            category: 'Room Service'
-          });
-        } else {
-          console.error("Failed to initialize call: call object is null");
-        }
-        
-        // Clear previous transcripts
-        setTranscripts([]);
-        
-        // Change interface to call in progress
-        setCurrentInterface('interface2');
-        
-        // Reset call duration
-        setCallDuration(0);
-      } catch (error) {
-        console.error("Failed to start call:", error);
+    try {
+      console.log('Starting call...');
+      
+      // Initialize VAPI if not already initialized
+      const vapi = initVapi();
+      if (!vapi) {
+        throw new Error('Failed to initialize VAPI');
       }
+
+      // Start the call
+      const call = await vapi.start(import.meta.env.VITE_VAPI_ASSISTANT_ID, {
+        modelOutputInMessagesEnabled: true
+      });
+
+      console.log('Call started:', call);
+
+      // Start call duration timer
+      const timer = setInterval(() => {
+        setCallDuration(prev => prev + 1);
+      }, 1000);
+      setCallTimer(timer);
+
+      // Move to Interface2
+      setCurrentInterface('interface2');
+
+    } catch (error) {
+      console.error('Error starting call:', error);
+      throw error;
     }
   };
 
