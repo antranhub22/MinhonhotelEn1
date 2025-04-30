@@ -1,42 +1,60 @@
 declare module '@vapi-ai/web' {
-  export interface VapiMessage {
-    role: 'assistant' | 'user';
-    modelOutput?: string;
-    content?: string;
-    type?: string;
-    summary?: string;
-    status?: string;
+  interface StartOptions {
+    assistantId?: string;
+    model?: {
+      provider: string;
+      model: string;
+      messages: Array<{
+        role: string;
+        content: string;
+      }>;
+    };
+  }
+
+  interface VapiMessage {
+    type: 'end_of_call_report' | 'status-update' | string;
+    status?: 'ended' | string;
     endedReason?: string;
+    summary?: string;
   }
 
-  export interface VapiStatus {
-    messages?: VapiMessage[];
-    [key: string]: any;
+  interface ButtonState {
+    color: string;
+    type: 'round';
+    title: string;
+    subtitle: string;
+    icon: string;
   }
 
-  export interface VapiTranscript {
-    messages?: VapiMessage[];
-    [key: string]: any;
+  interface ButtonConfig {
+    position: 'top' | 'bottom';
+    offset: string;
+    width: string;
+    height: string;
+    idle: ButtonState;
+    loading: ButtonState;
+    active: ButtonState;
   }
 
-  export interface VapiConfig {
-    baseUrl?: string;
-    debug?: boolean;
-  }
-
-  export interface VapiOptions {
-    modelOutputInMessagesEnabled?: boolean;
+  type VapiEventMap = {
+    'speech-start': () => void;
+    'speech-end': () => void;
+    'call-start': () => void;
+    'call-end': () => void;
+    'volume-level': (volume: number) => void;
+    'message': (message: VapiMessage) => void;
+    'error': (error: Error) => void;
   }
 
   export default class Vapi {
     constructor(publicKey: string);
-    
-    on(event: string, callback: (data: any) => void): void;
-    start(assistantId: string, options?: VapiOptions): Promise<any>;
-    stop(): Promise<void>;
-    send(data: any): void;
-    setMuted(muted: boolean): void;
+    start(options: StartOptions): Promise<any>;
+    on<K extends keyof VapiEventMap>(event: K, callback: VapiEventMap[K]): void;
+    stop(): void;
     isMuted(): boolean;
+    setMuted(muted: boolean): void;
     say(message: string, endCallAfterSpoken?: boolean): void;
   }
+
+  export { VapiMessage, ButtonConfig, ButtonState };
 } 
