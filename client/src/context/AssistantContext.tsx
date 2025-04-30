@@ -18,6 +18,7 @@ interface AssistantContextType {
   callDuration: number;
   isMuted: boolean;
   toggleMute: () => void;
+  setMuted: (muted: boolean) => void;
   startCall: () => Promise<void>;
   endCall: () => void;
   callSummary: CallSummary | null;
@@ -125,98 +126,40 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
 
   // Initialize Vapi when component mounts
   useEffect(() => {
-    const vapi = initVapi();
-    
-    // Set up message listener to handle transcripts and end of call reports
-    if (vapi) {
-      // Listen to volume-level events to update micLevel
-      vapi.on('volume-level', (level: number) => {
-        setMicLevel(level);
-      });
+    try {
+      const vapi = initVapi();
+      if (vapi) {
+        // Listen to volume-level events to update micLevel
+        vapi.on('volume-level', (level: number) => {
+          setMicLevel(level);
+        });
 
-      // Message handler for transcripts and reports
-      const handleMessage = async (message: any) => {
-        console.log('Message received:', message);
-        
-        // Debug all message types from Vapi
-        if (message.type) {
-          console.log(`Message type: ${message.type}`);
-        }
-        
-        // Handle transcripts
-        if (message.type === 'transcript' && message.transcriptType === 'final') {
-          const newTranscript: Transcript = {
-            id: Date.now() as unknown as number,
-            callId: callDetails?.id || `call-${Date.now()}`,
-            role: message.role,
-            content: message.transcript,
-            timestamp: new Date()
-          };
-          setTranscripts(prev => [...prev, newTranscript]);
-        }
-        
-        // Handle end of call report with summary
-        if (message.type === 'end_of_call_report') {
-          console.log('End of call report received:', message);
+        // Message handler for transcripts and reports
+        const handleMessage = async (message: any) => {
+          console.log('Message received:', message);
           
-          // Get the summary content, with fallback if it's missing
-          const summaryContent = message.summary || "No summary was provided by the assistant for this conversation.";
-          
-          // Create a new summary object
-          const newSummary: CallSummary = {
-            id: Date.now() as unknown as number,
-            callId: callDetails?.id || `call-${Date.now()}`,
-            content: summaryContent,
-            timestamp: new Date()
-          };
-          
-          // Set the summary in state so we can use it in Interface3
-          setCallSummary(newSummary);
-          
-          console.log('Summary saved to context state:', newSummary);
-          
-          // Extract order details from summary
-          try {
-            console.log('Parsing Vapi summary to extract order details...');
-            
-            // Get the parsed details
-            const parsedDetails = parseSummaryToOrderDetails(summaryContent);
-            
-            // Only update orderSummary if useful information was extracted
-            if (Object.keys(parsedDetails).length > 0) {
-              setOrderSummary(prevSummary => {
-                if (!prevSummary) return initialOrderSummary;
-                
-                // Start with existing order summary
-                const updatedSummary = { ...prevSummary };
-                
-                // Update with extracted information
-                if (parsedDetails.orderType) updatedSummary.orderType = parsedDetails.orderType;
-                if (parsedDetails.deliveryTime) updatedSummary.deliveryTime = parsedDetails.deliveryTime;
-                if (parsedDetails.roomNumber) updatedSummary.roomNumber = parsedDetails.roomNumber;
-                if (parsedDetails.specialInstructions) updatedSummary.specialInstructions = parsedDetails.specialInstructions;
-                
-                // Only update items if we extracted some
-                if (parsedDetails.items && parsedDetails.items.length > 0) {
-                  updatedSummary.items = parsedDetails.items;
-                }
-                
-                return updatedSummary;
-              });
-            }
-          } catch (error) {
-            console.error('Error parsing summary:', error);
+          // Debug all message types from Vapi
+          if (message.type) {
+            console.log(`Message type: ${message.type}`);
           }
-        }
-      };
+          
+          // Handle transcripts
+          if (message.type === 'transcript' && message.transcriptType === 'final') {
+            const newTranscript: Transcript = {
+              id: Date.now() as unknown as number,
+              callId: callDetails?.id || `call-${Date.now()}`,
+              role: message.role,
+              content: message.transcript,
+              timestamp: new Date()
+            };
+            setTranscripts(prev => [...prev, newTranscript]);
+          }
+        };
 
-      vapi.on('message', handleMessage);
-      
-      return () => {
-        // Clean up event listeners
-        vapi.on('message', () => {});
-        vapi.on('volume-level', () => {});
-      };
+        vapi.on('message', handleMessage);
+      }
+    } catch (error) {
+      console.error('Failed to initialize Vapi:', error);
     }
   }, []);
 
@@ -264,10 +207,21 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const setMuted = (muted: boolean) => {
+    if (vapiInstance) {
+      vapiInstance.setMuted(muted);
+      setIsMuted(muted);
+    }
+  };
+
   // Start call function
   const startCall = async () => {
     try {
       console.log('Starting call...');
+      
+      // Check microphone permissions first
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop());
       
       // Initialize VAPI if not already initialized
       const vapi = initVapi();
@@ -279,6 +233,10 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       const call = await vapi.start(import.meta.env.VITE_VAPI_ASSISTANT_ID, {
         modelOutputInMessagesEnabled: true
       });
+
+      if (!call) {
+        throw new Error('Failed to start call - no call object returned');
+      }
 
       console.log('Call started:', call);
 
@@ -293,6 +251,14 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
 
     } catch (error) {
       console.error('Error starting call:', error);
+      if (error instanceof Error) {
+        if (error.name === 'NotAllowedError') {
+          throw new Error('Microphone access is required for VAPI calls');
+        }
+        if (error.name === 'NotFoundError') {
+          throw new Error('No microphone found on this device');
+        }
+      }
       throw error;
     }
   };
@@ -509,6 +475,7 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     callDuration,
     isMuted,
     toggleMute,
+    setMuted,
     startCall,
     endCall,
     callSummary,

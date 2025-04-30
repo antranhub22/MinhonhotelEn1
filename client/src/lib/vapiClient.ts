@@ -20,20 +20,47 @@ export let vapiInstance: Vapi | null = null;
 export function initVapi() {
   if (!vapiInstance) {
     try {
-      vapiInstance = new Vapi(PUBLIC_KEY, {
-        baseUrl: 'https://api.vapi.ai',
-        debug: true // Enable debug logging
-      });
+      // Check environment variables first
+      if (!PUBLIC_KEY || !ASSISTANT_ID) {
+        console.error('Missing required environment variables:', {
+          PUBLIC_KEY: !!PUBLIC_KEY,
+          ASSISTANT_ID: !!ASSISTANT_ID
+        });
+        throw new Error('Missing required VAPI configuration');
+      }
+
+      // Check microphone permissions
+      if (typeof navigator !== 'undefined' && navigator.mediaDevices) {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(stream => {
+            stream.getTracks().forEach(track => track.stop());
+          })
+          .catch(error => {
+            console.error('Microphone access denied:', error);
+            throw new Error('Microphone access is required for VAPI');
+          });
+      }
+
+      // Initialize VAPI instance
+      vapiInstance = new Vapi(PUBLIC_KEY);
       
+      if (!vapiInstance) {
+        throw new Error('Failed to create VAPI instance');
+      }
+
       // Setup event listeners
       setupVapiEventListeners();
+      
       console.log('Vapi initialized successfully with config:', {
-        publicKey: PUBLIC_KEY,
+        publicKey: PUBLIC_KEY?.substring(0, 8) + '...', // Only log part of the key for security
         assistantId: ASSISTANT_ID
       });
+
+      return vapiInstance;
     } catch (error) {
       console.error('Failed to initialize Vapi:', error);
-      return null;
+      vapiInstance = null;
+      throw error; // Re-throw the error to handle it in the calling code
     }
   }
   
@@ -127,27 +154,48 @@ function setupVapiEventListeners() {
 export async function startCall() {
   if (!vapiInstance) {
     console.error('Vapi not initialized');
-    return;
+    throw new Error('VAPI not initialized. Please check your configuration.');
   }
 
   try {
+    // Check microphone permissions again before starting call
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach(track => track.stop());
+
     console.log('Starting call with config:', {
       assistantId: ASSISTANT_ID,
       modelOutputInMessagesEnabled: true
     });
     
-    const call = await vapiInstance.start(ASSISTANT_ID!, {
-      modelOutputInMessagesEnabled: true,
-      variableValues: {},
-      speech: {
-        enabled: true,
-        autoStart: true
-      }
+    const call = await vapiInstance.start(ASSISTANT_ID, {
+      modelOutputInMessagesEnabled: true
     });
-    console.log('Call started successfully:', call);
+
+    if (!call) {
+      throw new Error('Call object is null after starting');
+    }
+
+    if (!call.webCallUrl) {
+      console.warn('webCallUrl is null, this might indicate a connection issue');
+    }
+
+    console.log('Call started successfully:', {
+      callId: call.id,
+      status: call.status,
+      webCallUrl: !!call.webCallUrl
+    });
+    
     return call;
   } catch (error) {
     console.error('Error starting call:', error);
+    if (error instanceof Error) {
+      if (error.name === 'NotAllowedError') {
+        throw new Error('Microphone access is required for VAPI calls');
+      }
+      if (error.name === 'NotFoundError') {
+        throw new Error('No microphone found on this device');
+      }
+    }
     throw error;
   }
 }

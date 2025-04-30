@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAssistant } from '../context/AssistantContext';
+import { useAssistant } from '@/context/AssistantContext';
 import ModelOutput from './ModelOutput';
 
 const CallManager: React.FC = () => {
