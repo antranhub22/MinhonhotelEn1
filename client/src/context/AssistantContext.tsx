@@ -3,6 +3,7 @@ import { Transcript, OrderSummary, CallDetails, Order, InterfaceLayer, CallSumma
 import { initVapi, vapiInstance, FORCE_BASIC_SUMMARY } from '@/lib/vapiClient';
 import { apiRequest } from '@/lib/queryClient';
 import { parseSummaryToOrderDetails } from '@/lib/summaryParser';
+import { format } from 'date-fns';
 
 interface AssistantContextType {
   currentInterface: InterfaceLayer;
@@ -18,7 +19,6 @@ interface AssistantContextType {
   callDuration: number;
   isMuted: boolean;
   toggleMute: () => void;
-  setMuted: (muted: boolean) => void;
   startCall: () => Promise<void>;
   endCall: () => void;
   callSummary: CallSummary | null;
@@ -35,6 +35,23 @@ interface AssistantContextType {
   activeOrders: ActiveOrder[];
   addActiveOrder: (order: ActiveOrder) => void;
   micLevel: number;
+  resetToCheckpoint: () => void;
+  checkpoints: Checkpoint[];
+  saveCheckpoint: () => void;
+  loadCheckpoint: (checkpointId: string) => void;
+}
+
+interface Checkpoint {
+  id: string;
+  timestamp: Date;
+  transcripts: Transcript[];
+  orderSummary: OrderSummary | null;
+  callSummary: CallSummary | null;
+  serviceRequests: ServiceRequest[];
+  vietnameseSummary: string | null;
+  emailSentForCurrentSession: boolean;
+  requestReceivedAt: Date | null;
+  activeOrders: ActiveOrder[];
 }
 
 const initialOrderSummary: OrderSummary = {
@@ -98,6 +115,21 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     }
   });
   const [micLevel, setMicLevel] = useState<number>(0);
+  const [checkpoints, setCheckpoints] = useState<Checkpoint[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const stored = localStorage.getItem('checkpoints');
+      if (!stored) return [];
+      const parsed = JSON.parse(stored) as (Checkpoint & { timestamp: string })[];
+      return parsed.map(cp => ({
+        ...cp,
+        timestamp: new Date(cp.timestamp)
+      }));
+    } catch (err) {
+      console.error('Failed to parse checkpoints from localStorage', err);
+      return [];
+    }
+  });
 
   // Persist activeOrders to localStorage whenever it changes
   useEffect(() => {
@@ -126,41 +158,114 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
 
   // Initialize Vapi when component mounts
   useEffect(() => {
-    try {
-      const vapi = initVapi();
-      if (vapi) {
-        // Listen to volume-level events to update micLevel
-        vapi.on('volume-level', (level: number) => {
-          setMicLevel(level);
-        });
-
-        // Message handler for transcripts and reports
-        const handleMessage = async (message: any) => {
-          console.log('Message received:', message);
+    const vapi = initVapi();
+    
+    // Set up message listener to handle transcripts and end of call reports
+    if (vapi) {
+      // Listen to volume-level events to update micLevel
+      vapi.on('volume-level', (level: number) => {
+        setMicLevel(level);
+      });
+      // Message handler for transcripts and reports
+      const handleMessage = async (message: any) => {
+        console.log('Message received:', message);
+        
+        // Debug all message types from Vapi
+        if (message.type) {
+          console.log(`Message type: ${message.type}`);
+        }
+        
+        // Handle transcripts
+        if (message.type === 'transcript' && message.transcriptType === 'final') {
+          const newTranscript: Transcript = {
+            id: Date.now() as unknown as number,
+            callId: callDetails?.id || `call-${Date.now()}`,
+            role: message.role,
+            content: message.transcript,
+            timestamp: new Date()
+          };
+          setTranscripts(prev => [...prev, newTranscript]);
+        }
+        
+        // Handle end of call report with summary
+        if (message.type === 'end_of_call_report') {
+          console.log('End of call report received:', message);
           
-          // Debug all message types from Vapi
-          if (message.type) {
-            console.log(`Message type: ${message.type}`);
+          // Get the summary content, with fallback if it's missing
+          const summaryContent = message.summary || "No summary was provided by the assistant for this conversation.";
+          
+          // Create a new summary object
+          const newSummary: CallSummary = {
+            id: Date.now() as unknown as number,
+            callId: callDetails?.id || `call-${Date.now()}`,
+            content: summaryContent,
+            timestamp: new Date()
+          };
+          
+          // Set the summary in state so we can use it in Interface3
+          setCallSummary(newSummary);
+          
+          console.log('Summary saved to context state:', newSummary);
+          
+          // Extract order details from summary
+          try {
+            console.log('Parsing Vapi summary to extract order details...');
+            
+            // Get the parsed details
+            const parsedDetails = parseSummaryToOrderDetails(summaryContent);
+            
+            // Only update orderSummary if useful information was extracted
+            if (Object.keys(parsedDetails).length > 0) {
+              setOrderSummary(prevSummary => {
+                if (!prevSummary) return initialOrderSummary;
+                
+                // Start with existing order summary
+                const updatedSummary = { ...prevSummary };
+                
+                // Update with extracted information
+                if (parsedDetails.orderType) updatedSummary.orderType = parsedDetails.orderType;
+                if (parsedDetails.deliveryTime) updatedSummary.deliveryTime = parsedDetails.deliveryTime;
+                if (parsedDetails.roomNumber) updatedSummary.roomNumber = parsedDetails.roomNumber;
+                if (parsedDetails.specialInstructions) updatedSummary.specialInstructions = parsedDetails.specialInstructions;
+                
+                // Only update items if we extracted some
+                if (parsedDetails.items && parsedDetails.items.length > 0) {
+                  updatedSummary.items = parsedDetails.items;
+                }
+                
+                // Update total amount
+                if (parsedDetails.totalAmount) {
+                  updatedSummary.totalAmount = parsedDetails.totalAmount;
+                } else {
+                  // Recalculate based on current items
+                  updatedSummary.totalAmount = updatedSummary.items.reduce(
+                    (total, item) => total + (item.price * item.quantity), 
+                    0
+                  );
+                }
+                
+                console.log('Updated order summary with Vapi-extracted information:', updatedSummary);
+                return updatedSummary;
+              });
+            }
+          } catch (parseError) {
+            console.error('Error extracting order details from Vapi summary:', parseError);
+            // Keep existing order summary on error
           }
           
-          // Handle transcripts
-          if (message.type === 'transcript' && message.transcriptType === 'final') {
-            const newTranscript: Transcript = {
-              id: Date.now() as unknown as number,
-              callId: callDetails?.id || `call-${Date.now()}`,
-              role: message.role,
-              content: message.transcript,
-              timestamp: new Date()
-            };
-            setTranscripts(prev => [...prev, newTranscript]);
-          }
-        };
-
-        vapi.on('message', handleMessage);
-      }
-    } catch (error) {
-      console.error('Failed to initialize Vapi:', error);
+          // No need to manually update the container or send to server
+          // This is now handled in vapiClient.ts to follow the vanilla JS approach
+        }
+      };
+      
+      vapi.on('message', handleMessage);
     }
+    
+    return () => {
+      if (vapiInstance) {
+        vapiInstance.stop();
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -207,59 +312,42 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const setMuted = (muted: boolean) => {
-    if (vapiInstance) {
-      vapiInstance.setMuted(muted);
-      setIsMuted(muted);
-    }
-  };
-
   // Start call function
   const startCall = async () => {
-    try {
-      console.log('Starting call...');
-      
-      // Check microphone permissions first
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach(track => track.stop());
-      
-      // Initialize VAPI if not already initialized
-      const vapi = initVapi();
-      if (!vapi) {
-        throw new Error('Failed to initialize VAPI');
-      }
-
-      // Start the call
-      const call = await vapi.start(import.meta.env.VITE_VAPI_ASSISTANT_ID, {
-        modelOutputInMessagesEnabled: true
-      });
-
-      if (!call) {
-        throw new Error('Failed to start call - no call object returned');
-      }
-
-      console.log('Call started:', call);
-
-      // Start call duration timer
-      const timer = setInterval(() => {
-        setCallDuration(prev => prev + 1);
-      }, 1000);
-      setCallTimer(timer);
-
-      // Move to Interface2
-      setCurrentInterface('interface2');
-
-    } catch (error) {
-      console.error('Error starting call:', error);
-      if (error instanceof Error) {
-        if (error.name === 'NotAllowedError') {
-          throw new Error('Microphone access is required for VAPI calls');
+    // Record request received time
+    setRequestReceivedAt(new Date());
+    if (vapiInstance) {
+      try {
+        const assistant = import.meta.env.VITE_VAPI_ASSISTANT_ID || "demo";
+        const call = await vapiInstance.start(assistant);
+        
+        // Reset email sent flag for new call
+        setEmailSentForCurrentSession(false);
+        
+        if (call) {
+          // Initialize call details - we don't set roomNumber here
+          // as it should be asked for and extracted from conversation
+          setCallDetails({
+            id: call.id || `call-${Date.now()}`,
+            roomNumber: '',
+            duration: '00:00',
+            category: 'Room Service'
+          });
+        } else {
+          console.error("Failed to initialize call: call object is null");
         }
-        if (error.name === 'NotFoundError') {
-          throw new Error('No microphone found on this device');
-        }
+        
+        // Clear previous transcripts
+        setTranscripts([]);
+        
+        // Change interface to call in progress
+        setCurrentInterface('interface2');
+        
+        // Reset call duration
+        setCallDuration(0);
+      } catch (error) {
+        console.error("Failed to start call:", error);
       }
-      throw error;
     }
   };
 
@@ -461,6 +549,99 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const resetToCheckpoint = () => {
+    setTranscripts([]);
+    setOrderSummary(null);
+    setCallSummary(null);
+    setServiceRequests([]);
+    setVietnameseSummary(null);
+    setEmailSentForCurrentSession(false);
+    setRequestReceivedAt(null);
+    setActiveOrders([]);
+    localStorage.removeItem('activeOrders');
+  };
+
+  // Save current state as a checkpoint
+  const saveCheckpoint = () => {
+    const newCheckpoint: Checkpoint = {
+      id: Date.now().toString(),
+      timestamp: new Date(),
+      transcripts: [...transcripts],
+      orderSummary: orderSummary ? { ...orderSummary } : null,
+      callSummary: callSummary ? { ...callSummary } : null,
+      serviceRequests: [...serviceRequests],
+      vietnameseSummary,
+      emailSentForCurrentSession,
+      requestReceivedAt,
+      activeOrders: [...activeOrders]
+    };
+
+    setCheckpoints(prev => {
+      const updated = [...prev, newCheckpoint];
+      // Keep only the last 10 checkpoints
+      const trimmed = updated.slice(-10);
+      localStorage.setItem('checkpoints', JSON.stringify(trimmed));
+      return trimmed;
+    });
+  };
+
+  // Load a specific checkpoint
+  const loadCheckpoint = (checkpointId: string) => {
+    const checkpoint = checkpoints.find(cp => cp.id === checkpointId);
+    if (!checkpoint) return;
+
+    setTranscripts([...checkpoint.transcripts]);
+    setOrderSummary(checkpoint.orderSummary ? { ...checkpoint.orderSummary } : null);
+    setCallSummary(checkpoint.callSummary ? { ...checkpoint.callSummary } : null);
+    setServiceRequests([...checkpoint.serviceRequests]);
+    setVietnameseSummary(checkpoint.vietnameseSummary);
+    setEmailSentForCurrentSession(checkpoint.emailSentForCurrentSession);
+    setRequestReceivedAt(checkpoint.requestReceivedAt);
+    setActiveOrders([...checkpoint.activeOrders]);
+    localStorage.setItem('activeOrders', JSON.stringify(checkpoint.activeOrders));
+  };
+
+  // Add function to check and fix checkpoint storage
+  const checkAndFixCheckpointStorage = () => {
+    if (typeof window === 'undefined') return;
+    
+    try {
+      // Check if checkpoints exist in localStorage
+      const storedCheckpoints = localStorage.getItem('checkpoints');
+      if (!storedCheckpoints) {
+        console.log('No checkpoints found in localStorage');
+        return;
+      }
+
+      // Try to parse the checkpoints
+      const parsedCheckpoints = JSON.parse(storedCheckpoints);
+      console.log('Current checkpoints in storage:', parsedCheckpoints);
+
+      // Check if any checkpoints are from yesterday
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = format(yesterday, 'yyyy-MM-dd');
+
+      const yesterdayCheckpoints = parsedCheckpoints.filter((cp: any) => {
+        const cpDate = format(new Date(cp.timestamp), 'yyyy-MM-dd');
+        return cpDate === yesterdayStr;
+      });
+
+      console.log('Checkpoints from yesterday:', yesterdayCheckpoints);
+
+      if (yesterdayCheckpoints.length === 0) {
+        console.log('No checkpoints found from yesterday');
+      }
+    } catch (error) {
+      console.error('Error checking checkpoint storage:', error);
+    }
+  };
+
+  // Call the check function when component mounts
+  useEffect(() => {
+    checkAndFixCheckpointStorage();
+  }, []);
+
   const value: AssistantContextType = {
     currentInterface,
     setCurrentInterface,
@@ -475,7 +656,6 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     callDuration,
     isMuted,
     toggleMute,
-    setMuted,
     startCall,
     endCall,
     callSummary,
@@ -492,6 +672,10 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     activeOrders,
     addActiveOrder,
     micLevel,
+    resetToCheckpoint,
+    checkpoints,
+    saveCheckpoint,
+    loadCheckpoint,
   };
 
   return (

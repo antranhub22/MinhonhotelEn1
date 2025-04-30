@@ -7,14 +7,17 @@ const ASSISTANT_ID = import.meta.env.VITE_VAPI_ASSISTANT_ID;
 // Option to force basic summary generation (for testing fallback)
 export const FORCE_BASIC_SUMMARY = false; // Set to true to always use basic summary
 
-let vapiInstance: Vapi | null = null;
+export let vapiInstance: Vapi | null = null;
 
-export const initializeVapi = () => {
+export const initVapi = () => {
   vapiInstance = new Vapi(PUBLIC_KEY);
 
   vapiInstance.on('speech-start', () => {
     console.log('Speech has started');
   });
+
+  setupVapiEventListeners();
+  return vapiInstance;
 };
 
 // Event handling will be delegated to the AssistantContext
@@ -131,7 +134,7 @@ export const buttonConfig: ButtonConfig = {
 export const startCall = async () => {
   try {
     if (!vapiInstance) {
-      initializeVapi();
+      initVapi();
     }
     
     if (!vapiInstance) {
