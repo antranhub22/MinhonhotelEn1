@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useAssistant } from '@/context/AssistantContext';
 import Reference from './Reference';
 import { referenceService, ReferenceItem } from '@/services/ReferenceService';
+import { useVapiTranscript } from '../hooks/useVapiTranscript';
 
 interface Interface2Props {
   isActive: boolean;
@@ -10,7 +11,6 @@ interface Interface2Props {
 const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
   console.log('Interface2 rendered, isActive:', isActive);
   const { 
-    transcripts, 
     callDetails,
     callDuration,
     endCall: contextEndCall,
@@ -19,6 +19,12 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
     setCurrentInterface,
     micLevel
   } = useAssistant();
+  
+  // Lấy callId và publicKey từ callDetails hoặc biến môi trường
+  const callId = callDetails?.id || '';
+  const publicKey = process.env.REACT_APP_VAPI_PUBLIC_KEY || '';
+  // Nhận transcript realtime từ Vapi
+  const transcripts = useVapiTranscript({ callId, publicKey });
   
   console.log('Current transcripts:', transcripts);
   
@@ -148,8 +154,8 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
             ref={conversationRef}
             className="relative p-2 w-full min-h-[60px] max-h-[128px] overflow-y-auto"
           >
-            {[...transcripts].reverse().map((transcript) => (
-              <div key={transcript.id} className="mb-2">
+            {[...transcripts].reverse().map((transcript, idx) => (
+              <div key={idx} className="mb-2">
                 <div className="flex items-start mb-1">
                   <div className={`w-8 h-8 rounded-full ${
                     transcript.role === 'assistant' ? 'bg-primary text-white' : 'bg-amber-400 text-primary-dark'
@@ -159,7 +165,7 @@ const Interface2: React.FC<Interface2Props> = ({ isActive }) => {
                     </span>
                   </div>
                   <div className="flex-grow">
-                    <p className={`text-sm mb-1 ${transcript.role === 'assistant' ? 'text-yellow-400' : 'text-blue-400'}`}>
+                    <p className={`text-sm mb-1 ${transcript.role === 'assistant' ? 'text-yellow-400' : 'text-blue-400'}`}> 
                       {transcript.role === 'assistant' ? 'Assistant' : 'You'}
                     </p>
                     <p className={`text-xl font-semibold ${transcript.role === 'assistant' ? 'text-yellow-200' : 'text-blue-200'}`}>{transcript.content}</p>

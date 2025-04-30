@@ -154,17 +154,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // API endpoints for call summaries will be defined below
   
-  // Get transcripts by call ID
-  app.get('/api/transcripts/:callId', async (req, res) => {
-    try {
-      const callId = req.params.callId;
-      const transcripts = await storage.getTranscriptsByCallId(callId);
-      res.json(transcripts);
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to retrieve transcripts' });
-    }
-  });
-  
   // Create new order
   app.post('/api/orders', async (req, res) => {
     try {
