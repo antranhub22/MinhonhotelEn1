@@ -16,26 +16,43 @@ interface VapiTranscript {
   [key: string]: any;
 }
 
-if (!process.env.VITE_VAPI_PUBLIC_KEY) {
-  throw new Error('VITE_VAPI_PUBLIC_KEY is not set in environment variables');
+if (!process.env.VAPI_PUBLIC_KEY) {
+  throw new Error('VAPI_PUBLIC_KEY is not set in environment variables');
 }
 
-if (!process.env.VITE_VAPI_ASSISTANT_ID) {
-  throw new Error('VITE_VAPI_ASSISTANT_ID is not set in environment variables');
+if (!process.env.VAPI_ASSISTANT_ID) {
+  throw new Error('VAPI_ASSISTANT_ID is not set in environment variables');
 }
 
-export const vapi = new VapiClient(process.env.VITE_VAPI_PUBLIC_KEY);
+export const vapi = new VapiClient(process.env.VAPI_PUBLIC_KEY);
+
+// Set up event listeners
+vapi.on('call-start', () => {
+  console.log('Call started');
+});
+
+vapi.on('call-end', () => {
+  console.log('Call ended');
+});
+
+vapi.on('speech-start', () => {
+  console.log('Assistant started speaking');
+});
+
+vapi.on('speech-end', () => {
+  console.log('Assistant finished speaking');
+});
+
+vapi.on('error', (error) => {
+  console.error('VAPI error:', error);
+});
 
 // Function to start a call
 export async function startCall() {
   try {
-    const call = await vapi.start({
-      assistantId: process.env.VITE_VAPI_ASSISTANT_ID!,
-      config: {
-        modelOutputInMessagesEnabled: true, // Enable model output in messages
-        modelOutputLanguage: 'en', // Set output language to English
-      }
-    });
+    console.log('Starting call with assistant:', process.env.VAPI_ASSISTANT_ID);
+    const call = await vapi.start(process.env.VAPI_ASSISTANT_ID!);
+    console.log('Call started successfully:', call);
     return call;
   } catch (error) {
     console.error('Error starting call:', error);
@@ -46,7 +63,9 @@ export async function startCall() {
 // Function to end a call
 export async function endCall() {
   try {
+    console.log('Ending call');
     await vapi.stop();
+    console.log('Call ended successfully');
   } catch (error) {
     console.error('Error ending call:', error);
     throw error;
@@ -56,6 +75,7 @@ export async function endCall() {
 // Function to send a message during the call
 export async function sendMessage(content: string, role: 'system' | 'user' = 'user') {
   try {
+    console.log('Sending message:', { content, role });
     vapi.send({
       type: 'add-message',
       message: {
@@ -72,7 +92,9 @@ export async function sendMessage(content: string, role: 'system' | 'user' = 'us
 // Function to handle model output from messages
 export function setupModelOutputListener(callback: (modelOutput: string) => void) {
   vapi.on('message', (message) => {
+    console.log('Received message:', message);
     if (message?.role === 'assistant' && message?.modelOutput) {
+      console.log('Model output:', message.modelOutput);
       callback(message.modelOutput);
     }
   });
@@ -80,6 +102,7 @@ export function setupModelOutputListener(callback: (modelOutput: string) => void
 
 // Function to mute/unmute the microphone
 export function setMuted(muted: boolean) {
+  console.log('Setting mute state:', muted);
   vapi.setMuted(muted);
 }
 
@@ -90,6 +113,7 @@ export function isMuted(): boolean {
 
 // Function to make the assistant say something
 export function say(message: string, endCallAfterSpoken: boolean = false) {
+  console.log('Making assistant say:', message);
   vapi.say(message, endCallAfterSpoken);
 }
 

@@ -75,6 +75,7 @@ const CallManager: React.FC = () => {
         <div className="text-gray-600">
           Status: {isCallActive ? 'Call in progress' : 'Ready to start'}
         </div>
+        {isCallActive && <ModelOutput />}
       </div>
     </div>
   );
