@@ -6,5 +6,9 @@ services:
       dockerfile: ./Dockerfile
     environment:
       NODE_ENV: production
+      DATABASE_URL: postgresql://minhonhotelen1_user:Fjos7A0kclGCOQZKtSaDoSHYOgvd8GWU@dpg-d036eph5pdvs73db24rg-a:5432/minhonhotelen1
     ports:
       - 3000:3000
+
+volumes:
+  postgres_data:

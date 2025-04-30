@@ -3,6 +3,10 @@ declare module '@vapi-ai/web' {
     role: 'assistant' | 'user';
     modelOutput?: string;
     content?: string;
+    type?: string;
+    summary?: string;
+    status?: string;
+    endedReason?: string;
   }
 
   export interface VapiStatus {
@@ -15,13 +19,24 @@ declare module '@vapi-ai/web' {
     [key: string]: any;
   }
 
+  export interface VapiConfig {
+    baseUrl?: string;
+    debug?: boolean;
+  }
+
+  export interface SpeechConfig {
+    enabled: boolean;
+    autoStart?: boolean;
+  }
+
   export interface AssistantOverrides {
     modelOutputInMessagesEnabled?: boolean;
     variableValues?: Record<string, any>;
+    speech?: SpeechConfig;
   }
 
   export default class Vapi {
-    constructor(publicKey: string);
+    constructor(publicKey: string, config?: VapiConfig);
     
     on(event: string, callback: (data: any) => void): void;
     start(assistantId: string, overrides?: AssistantOverrides): Promise<any>;

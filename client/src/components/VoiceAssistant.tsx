@@ -25,11 +25,9 @@ const VoiceAssistant: React.FC = () => {
             <h1 className="font-poppins font-bold text-xl">Mi Nhon Hotel Mui Ne</h1>
           </div>
           <div className="hidden md:flex items-center space-x-4">
-            <Link href="/call-history">
-              <a className="px-3 py-1 rounded bg-primary-dark text-white text-sm flex items-center">
-                <History className="w-4 h-4 mr-1" />
-                Call History
-              </a>
+            <Link href="/call-history" className="px-3 py-1 rounded bg-primary-dark text-white text-sm flex items-center">
+              <History className="w-4 h-4 mr-1" />
+              Call History
             </Link>
             <button className="px-3 py-1 rounded bg-amber-400 text-neutral-dark text-sm">
               <span className="material-icons text-sm align-middle mr-1">help_outline</span>

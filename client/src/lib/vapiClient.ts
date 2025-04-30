@@ -20,11 +20,17 @@ export let vapiInstance: Vapi | null = null;
 export function initVapi() {
   if (!vapiInstance) {
     try {
-      vapiInstance = new Vapi(PUBLIC_KEY);
+      vapiInstance = new Vapi(PUBLIC_KEY, {
+        baseUrl: 'https://api.vapi.ai',
+        debug: true // Enable debug logging
+      });
       
       // Setup event listeners
       setupVapiEventListeners();
-      console.log('Vapi initialized successfully');
+      console.log('Vapi initialized successfully with config:', {
+        publicKey: PUBLIC_KEY,
+        assistantId: ASSISTANT_ID
+      });
     } catch (error) {
       console.error('Failed to initialize Vapi:', error);
       return null;
@@ -125,9 +131,18 @@ export async function startCall() {
   }
 
   try {
+    console.log('Starting call with config:', {
+      assistantId: ASSISTANT_ID,
+      modelOutputInMessagesEnabled: true
+    });
+    
     const call = await vapiInstance.start(ASSISTANT_ID!, {
       modelOutputInMessagesEnabled: true,
-      variableValues: {}
+      variableValues: {},
+      speech: {
+        enabled: true,
+        autoStart: true
+      }
     });
     console.log('Call started successfully:', call);
     return call;
