@@ -27,6 +27,14 @@ if (!process.env.VITE_VAPI_ASSISTANT_ID) {
 export const vapi = new VapiClient(process.env.VITE_VAPI_PUBLIC_KEY);
 
 // Set up event listeners
+vapi.on('speech-start', () => {
+  console.log('Assistant started speaking');
+});
+
+vapi.on('speech-end', () => {
+  console.log('Assistant finished speaking');
+});
+
 vapi.on('call-start', () => {
   console.log('Call started');
 });
@@ -35,12 +43,15 @@ vapi.on('call-end', () => {
   console.log('Call ended');
 });
 
-vapi.on('speech-start', () => {
-  console.log('Assistant started speaking');
+vapi.on('volume-level', (volume) => {
+  console.log(`Assistant volume level: ${volume}`);
 });
 
-vapi.on('speech-end', () => {
-  console.log('Assistant finished speaking');
+vapi.on('message', (message) => {
+  console.log('Received message:', message);
+  if (message?.role === 'assistant' && message?.modelOutput) {
+    console.log('Model output:', message.modelOutput);
+  }
 });
 
 vapi.on('error', (error) => {
@@ -51,7 +62,10 @@ vapi.on('error', (error) => {
 export async function startCall() {
   try {
     console.log('Starting call with assistant:', process.env.VITE_VAPI_ASSISTANT_ID);
-    const call = await vapi.start(process.env.VITE_VAPI_ASSISTANT_ID!);
+    const call = await vapi.start(process.env.VITE_VAPI_ASSISTANT_ID!, {
+      modelOutputInMessagesEnabled: true,
+      variableValues: {}
+    });
     console.log('Call started successfully:', call);
     return call;
   } catch (error) {
@@ -117,40 +131,33 @@ export function say(message: string, endCallAfterSpoken: boolean = false) {
   vapi.say(message, endCallAfterSpoken);
 }
 
-// Function to get call status and model output
-export async function getCallStatus(callId: string): Promise<VapiStatus> {
+// Function to get call status
+export async function getCallStatus(): Promise<VapiStatus> {
   try {
-    const status = await vapi.getCallStatus(callId) as VapiStatus;
-    return status;
+    const status = await vapi.getCallStatus();
+    return status as VapiStatus;
   } catch (error) {
     console.error('Error getting call status:', error);
     throw error;
   }
 }
 
-// Function to get call transcript with model outputs
-export async function getCallTranscript(callId: string): Promise<VapiTranscript> {
+// Function to get call transcript
+export async function getCallTranscript(): Promise<VapiTranscript> {
   try {
-    const transcript = await vapi.getCallTranscript(callId) as VapiTranscript;
-    return transcript;
+    const transcript = await vapi.getCallTranscript();
+    return transcript as VapiTranscript;
   } catch (error) {
     console.error('Error getting call transcript:', error);
     throw error;
   }
 }
 
-// Function to get real-time model outputs
-export async function getRealtimeModelOutput(callId: string): Promise<string | null> {
-  try {
-    const status = await vapi.getCallStatus(callId) as VapiStatus;
-    const messages = status.messages || [];
-    // Get the latest assistant message with model output
-    const latestModelOutput = messages
-      .filter((msg: VapiMessage) => msg.role === 'assistant' && msg.modelOutput)
-      .pop()?.modelOutput;
-    return latestModelOutput || null;
-  } catch (error) {
-    console.error('Error getting realtime model output:', error);
-    throw error;
-  }
+// Function to get real-time model outputs from messages
+export function getRealtimeModelOutput(callback: (modelOutput: string) => void) {
+  vapi.on('message', (message) => {
+    if (message?.role === 'assistant' && message?.modelOutput) {
+      callback(message.modelOutput);
+    }
+  });
 } 

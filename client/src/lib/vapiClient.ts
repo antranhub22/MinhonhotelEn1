@@ -117,6 +117,72 @@ function setupVapiEventListeners() {
   });
 }
 
+// Function to start a call
+export async function startCall() {
+  if (!vapiInstance) {
+    console.error('Vapi not initialized');
+    return;
+  }
+
+  try {
+    const call = await vapiInstance.start(ASSISTANT_ID!, {
+      modelOutputInMessagesEnabled: true,
+      variableValues: {}
+    });
+    console.log('Call started successfully:', call);
+    return call;
+  } catch (error) {
+    console.error('Error starting call:', error);
+    throw error;
+  }
+}
+
+// Function to end a call
+export async function endCall() {
+  if (!vapiInstance) {
+    console.error('Vapi not initialized');
+    return;
+  }
+
+  try {
+    await vapiInstance.stop();
+    console.log('Call ended successfully');
+  } catch (error) {
+    console.error('Error ending call:', error);
+    throw error;
+  }
+}
+
+// Function to mute/unmute the microphone
+export function setMuted(muted: boolean) {
+  if (!vapiInstance) {
+    console.error('Vapi not initialized');
+    return;
+  }
+
+  vapiInstance.setMuted(muted);
+}
+
+// Function to check if microphone is muted
+export function isMuted(): boolean {
+  if (!vapiInstance) {
+    console.error('Vapi not initialized');
+    return false;
+  }
+
+  return vapiInstance.isMuted();
+}
+
+// Function to make the assistant say something
+export function say(message: string, endCallAfterSpoken: boolean = false) {
+  if (!vapiInstance) {
+    console.error('Vapi not initialized');
+    return;
+  }
+
+  vapiInstance.say(message, endCallAfterSpoken);
+}
+
 export const buttonConfig = {
   position: "top",
   offset: "240px",
