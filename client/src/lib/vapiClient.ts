@@ -171,6 +171,10 @@ export const startCall = async () => {
       throw new Error('Failed to initialize Vapi client');
     }
 
+    // Log giá trị thực tế để debug
+    console.log('DEBUG VAPI PUBLIC_KEY:', PUBLIC_KEY);
+    console.log('DEBUG VAPI ASSISTANT_ID:', ASSISTANT_ID);
+
     await vapiInstance.start(ASSISTANT_ID);
 
     return vapiInstance;
