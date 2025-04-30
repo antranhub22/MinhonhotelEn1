@@ -60,8 +60,11 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  const port = process.env.PORT || 10000;
-  server.listen(port, () => {
+  const port = parseInt(process.env.PORT || '10000', 10);
+  server.listen({
+    port: port,
+    host: '0.0.0.0'
+  }, () => {
     console.log(`Server is running on port ${port}`);
   });
 })();
